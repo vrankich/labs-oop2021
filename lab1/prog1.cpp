@@ -357,6 +357,10 @@ namespace SparseMatrix
 
 	const void output(const char *msg, Matrix *&arr) noexcept
 	{
+		if (!arr) {
+			std::cout << "\nEmpty matrix\n";
+			return;
+		}
 		std::cout << "\nChoose output of matrix:\n" << std::endl;
 		std::cout << "1. Print matrix with zeros" << std::endl;
 		std::cout << "2. Print matrix without zeros" << std::endl;
