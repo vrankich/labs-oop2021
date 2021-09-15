@@ -47,8 +47,8 @@ namespace SparseMatrix
 	void delete_matrix(Matrix *&);
 	Matrix *get_matrix();
 	void change_matrix(Matrix *&);
-	const void print_matrix(const void (*)(Matrix *&), const char *, Matrix *&) noexcept;
-	const void output(const char *, Matrix *&) noexcept;
+	const void print_matrix(const void (*)(const Matrix *), const char *, const Matrix *) noexcept;
+	const void output(const char *, const Matrix *) noexcept;
 }
 
 namespace sm = SparseMatrix;

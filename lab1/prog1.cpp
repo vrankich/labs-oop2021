@@ -296,7 +296,7 @@ namespace SparseMatrix
 		sort_row(max_sum_row, arr->n_col);
 	}
 
-	const void print_with_zeros(Matrix *&arr)
+	const void print_with_zeros(const Matrix *arr)
 	{
 		Row *ptr_row = arr->first;
 		Element *ptr_el = nullptr;
@@ -322,7 +322,7 @@ namespace SparseMatrix
 		}
 	}
 	
-	const void print_without_zeros(Matrix *&arr)
+	const void print_without_zeros(const Matrix *arr)
 	{
 		if (!arr->first) {
 			std::cout << "Matrix does not have nonzero elements...\n";
@@ -344,7 +344,7 @@ namespace SparseMatrix
 		}
 	}
 
-	const void print_matrix(const void (*print)(Matrix *&), const char *msg, Matrix *&arr) noexcept
+	const void print_matrix(const void (*print)(const Matrix *), const char *msg, const Matrix *arr) noexcept
 	{
 		if (!arr) {
 			std::cout << "\nEmpty matrix\n\n";
@@ -355,7 +355,7 @@ namespace SparseMatrix
 		std::cout << std::endl;
 	}
 
-	const void output(const char *msg, Matrix *&arr) noexcept
+	const void output(const char *msg, const Matrix *arr) noexcept
 	{
 		if (!arr) {
 			std::cout << "\nEmpty matrix\n";
