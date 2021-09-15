@@ -112,6 +112,7 @@ namespace SparseMatrix
 				if (num) {
 					if (!row->first) {
 						row->first = new_el(i, num);
+<<<<<<< HEAD
 						if (!row->first) {
 							return -1;
 						}
@@ -121,6 +122,11 @@ namespace SparseMatrix
 						if (!ptr->next) {
 							return -1;
 						}
+=======
+						ptr = row->first;
+					} else {
+						ptr->next = new_el(i, num);
+>>>>>>> 88be4e22a3c77e9bb9a116d43616eab7564e081b
 						ptr = ptr->next;
 					}
 					row->not_zero++;
@@ -145,6 +151,7 @@ namespace SparseMatrix
 		}
 
 		Matrix *arr = new_matrix(m, n);
+<<<<<<< HEAD
 		if (!arr) {
 			return nullptr;
 		}
@@ -155,6 +162,11 @@ namespace SparseMatrix
 			if (!temp) {
 				return nullptr;
 			}
+=======
+		Row *ptr = nullptr, *temp = nullptr;
+		for (int i = 0; i < m; i++) {
+			temp = new_row(i);
+>>>>>>> 88be4e22a3c77e9bb9a116d43616eab7564e081b
 			std::cout << "\nEnter elements for row [" << i + 1 << "]:\n";
 			if (get_row(temp, arr->n_col) < 0) {
 				delete_matrix(arr);
@@ -283,7 +295,11 @@ namespace SparseMatrix
 	}
 
 	/* Sorts row with max sum of elements */
+<<<<<<< HEAD
 	void change_matrix(Matrix *&arr)
+=======
+	void make_new_matrix(Matrix *&arr)
+>>>>>>> 88be4e22a3c77e9bb9a116d43616eab7564e081b
 	{
 		if (!arr) {
 			return;
@@ -324,19 +340,26 @@ namespace SparseMatrix
 	
 	const void print_without_zeros(Matrix *&arr)
 	{
+<<<<<<< HEAD
 		if (!arr->first) {
 			std::cout << "Matrix does not have nonzero elements...\n";
 		}
 
+=======
+>>>>>>> 88be4e22a3c77e9bb9a116d43616eab7564e081b
 		Row *ptr_row = arr->first;
 		Element *ptr_el = nullptr;
 
 		while (ptr_row) {
 			ptr_el = ptr_row->first;
 			while (ptr_el) {
+<<<<<<< HEAD
 				std::cout << "[" << ptr_row->index + 1 << "]";
 				std::cout << "[" << ptr_el->col + 1<< "]: ";
 				std::cout << ptr_el->data << std::endl;
+=======
+				std::cout << ptr_el->data << " | ";
+>>>>>>> 88be4e22a3c77e9bb9a116d43616eab7564e081b
 				ptr_el = ptr_el->next;
 			}
 			ptr_row = ptr_row->next;

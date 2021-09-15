@@ -46,7 +46,11 @@ namespace SparseMatrix
 
 	void delete_matrix(Matrix *&);
 	Matrix *get_matrix();
+<<<<<<< HEAD
 	void change_matrix(Matrix *&);
+=======
+	void make_new_matrix(Matrix *&);
+>>>>>>> 88be4e22a3c77e9bb9a116d43616eab7564e081b
 	const void print_matrix(const void (*)(Matrix *&), const char *, Matrix *&) noexcept;
 	const void output(const char *, Matrix *&) noexcept;
 }
