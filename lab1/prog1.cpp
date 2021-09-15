@@ -112,9 +112,15 @@ namespace SparseMatrix
 				if (num) {
 					if (!row->first) {
 						row->first = new_el(i, num);
+						if (!row->first) {
+							return -1;
+						}
 						ptr = row->first;
 					} else {
 						ptr->next = new_el(i, num);
+						if (!ptr->next) {
+							return -1;
+						}
 						ptr = ptr->next;
 					}
 					row->not_zero++;
@@ -139,9 +145,16 @@ namespace SparseMatrix
 		}
 
 		Matrix *arr = new_matrix(m, n);
+		if (!arr) {
+			return nullptr;
+		}
+		
 		Row *ptr = nullptr, *temp = nullptr;
 		for (int i = 0; i < m; i++) {
 			temp = new_row(i);
+			if (!temp) {
+				return nullptr;
+			}
 			std::cout << "\nEnter elements for row [" << i + 1 << "]:\n";
 			if (get_row(temp, arr->n_col) < 0) {
 				delete_matrix(arr);
@@ -164,7 +177,7 @@ namespace SparseMatrix
 		return arr;
 	}
 
-	double sum_in_row(Row *&row)
+	const double sum_in_row(Row *&row)
 	{
 		if (!row) {
 			return 0;
@@ -258,7 +271,7 @@ namespace SparseMatrix
 			ptr = ptr->next;
 		}
 		
-		if (row->first->col == 0) {
+		if (row->first->col <= 0) {
 			sort(temp_arr, 0, row->not_zero - 1, &is_less);
 			make_row_from_vector(row, temp_arr, row->not_zero, row->index, n - row->not_zero);
 		} else {
@@ -270,7 +283,7 @@ namespace SparseMatrix
 	}
 
 	/* Sorts row with max sum of elements */
-	void make_new_matrix(Matrix *&arr)
+	void change_matrix(Matrix *&arr)
 	{
 		if (!arr) {
 			return;
@@ -283,17 +296,11 @@ namespace SparseMatrix
 		sort_row(max_sum_row, arr->n_col);
 	}
 
-	void print_matrix(const char *msg, Matrix *&arr) noexcept
+	const void print_with_zeros(Matrix *&arr)
 	{
-		if (!arr) {
-			std::cout << "\nEmpty matrix\n\n";
-			return;
-		}
-	
-		std::cout << std::endl << msg << std::endl;
 		Row *ptr_row = arr->first;
 		Element *ptr_el = nullptr;
-		
+
 		for (int i = 0; i < arr->n_rows; i++) {
 			if (!ptr_row || i != ptr_row->index) {	
 				for (int j = 0; j < arr->n_col; j++) {
@@ -313,6 +320,59 @@ namespace SparseMatrix
 			}
 			std::cout << std::endl;
 		}
+	}
+	
+	const void print_without_zeros(Matrix *&arr)
+	{
+		if (!arr->first) {
+			std::cout << "Matrix does not have nonzero elements...\n";
+		}
+
+		Row *ptr_row = arr->first;
+		Element *ptr_el = nullptr;
+
+		while (ptr_row) {
+			ptr_el = ptr_row->first;
+			while (ptr_el) {
+				std::cout << "[" << ptr_row->index + 1 << "]";
+				std::cout << "[" << ptr_el->col + 1<< "]: ";
+				std::cout << ptr_el->data << std::endl;
+				ptr_el = ptr_el->next;
+			}
+			ptr_row = ptr_row->next;
+			std::cout << std::endl;
+		}
+	}
+
+	const void print_matrix(const void (*print)(Matrix *&), const char *msg, Matrix *&arr) noexcept
+	{
+		if (!arr) {
+			std::cout << "\nEmpty matrix\n\n";
+			return;
+		}
+		std::cout << std::endl << msg << std::endl;
+		print(arr);
 		std::cout << std::endl;
+	}
+
+	const void output(const char *msg, Matrix *&arr) noexcept
+	{
+		std::cout << "\nChoose output of matrix:\n" << std::endl;
+		std::cout << "1. Print matrix with zeros" << std::endl;
+		std::cout << "2. Print matrix without zeros" << std::endl;
+		int choice;
+		const char *err = "";
+		do {
+			std::cout << err << std::endl;
+			err = "\nIncorrect choice...\nTry again\n";
+			if (sm::get_num(choice) < 0) {
+				return;
+			}
+		} while (choice != 1 && choice != 2);
+		if (choice == 1) {
+			print_matrix(print_with_zeros, msg, arr);
+		} else {
+			print_matrix(print_without_zeros, msg, arr);
+		}
 	}
 }
