@@ -92,15 +92,22 @@ namespace MathEquation
 		return (8 / 3) * r * sin(angle / 2);
 	}
 
-	// TABLE
 	/* Вернуть радиуса кривизны в характерных точках кардиоиды */
-	double *Cardioid::r_of_curvature() const
+	double **Cardioid::r_of_curvature() const
 	{
-		double *r_arr = new double[4];
-		r_arr[0] = calculate_r_of_curvature(this->m_r, 0);
-		r_arr[1] = calculate_r_of_curvature(this->m_r, M_PI / 6);
-		r_arr[2] = calculate_r_of_curvature(this->m_r, M_PI / 4);
-		r_arr[3] = calculate_r_of_curvature(this->m_r, M_PI / 3);
+		double **r_arr = new double*[4];
+		/* First row - angles */
+		r_arr[0] = new double[4];
+		r_arr[0][0] = 0;
+		r_arr[0][1] = M_PI / 6;
+		r_arr[0][2] = M_PI / 4;
+		r_arr[0][3] = M_PI / 3;
+		/*Second row - radii */
+		r_arr[1] = new double[4];
+		r_arr[1][0] = calculate_r_of_curvature(this->m_r, 0);
+		r_arr[1][1] = calculate_r_of_curvature(this->m_r, M_PI / 6);
+		r_arr[1][2] = calculate_r_of_curvature(this->m_r, M_PI / 4);
+		r_arr[1][3] = calculate_r_of_curvature(this->m_r, M_PI / 3);
 		return r_arr;
 	}
 

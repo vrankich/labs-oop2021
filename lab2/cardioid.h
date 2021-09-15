@@ -35,7 +35,7 @@ namespace MathEquation
 		double get_r() const;
 		double polar_distance(double) const;
 		Point *most_distant_points() const;
-		double *r_of_curvature() const;
+		double **r_of_curvature() const;
 		double area() const;
 		double polar_arc_lenght(const double) const;
 	};
