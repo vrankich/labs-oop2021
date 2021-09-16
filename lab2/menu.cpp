@@ -40,7 +40,6 @@ double *get_radius(double &r)
 		std::cin >> r;
 		err = "Enter a positive real number...";
 		if (!std::cin.good()) {
-			throw invalid_input();
 			return nullptr;
 		}
 	} while (r <= 0);
@@ -70,8 +69,51 @@ double *get_angle(double &radians)
 	return &radians;
 }
 
+heart::Point *get_point(const char *msg, heart::Point &p)
+{
+	std::cout << msg;
+	std::cout << "x coordinate ---> ";
+	std::cin >> p.x;
+	if (!std::cin.good()) {
+		return nullptr;
+	}
+	std::cout << "y coordinate ---> ";
+	std::cin >> p.y;
+	if (!std::cin.good()) {
+		return nullptr;
+	}
+	return &p;
+}
+
+heart::Cardioid *get_cardioid(heart::Cardioid &c)
+{
+	try {
+		double r;
+		heart::Point p;
+		if (!get_point("\nEnter coordinates of a center:\n", p)) {
+			throw invalid_input();
+		}
+		if (!get_radius(r)) {
+			throw invalid_radius();
+		}
+		c.set_center(p);
+		c.set_r(r);
+		return &c;
+	} catch (std::exception &e) {
+		std::cout << e.what() << std::endl;
+		return nullptr;
+	}
+}
+
 void menu()
 {
+	heart::Cardioid cardioid;
+	if (!get_cardioid(cardioid)) {
+		return;
+	}
+
+	double angle;
+	heart::Radius *radii = nullptr;
 	int c = 0;
 	do {
 		c = dialog(FUNCS, FUNCS_SIZE);
@@ -80,19 +122,33 @@ void menu()
 			// quit
 				break;
 			case 1:
-
+				if (!get_angle(angle)) {
+					return;
+				}
+				std::cout << std::endl;
+				std::cout << cardioid.polar_distance(angle) << std::endl;
 				break;
 			case 2:
 
 				break;
 			case 3:
-
+				radii = cardioid.r_of_curvature();
+				for (int i = 0; i < 4; i++) {
+					std::cout << "Radius of curvature for " << radii[i].angle << ": ";
+					std::cout << radii[i].r << std::endl;
+				}
+				delete [] radii;
 				break;
 			case 4:
-
+				std::cout << std::endl;
+				std::cout << cardioid.area() << std::endl;
 				break;
 			case 5:
-
+				if (!get_angle(angle)) {
+					return;
+				}
+				std::cout << std::endl;
+				std::cout << cardioid.polar_arc_lenght(angle) << std::endl;
 				break;
 		}
 	} while (c != 0);
