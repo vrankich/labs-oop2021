@@ -20,6 +20,13 @@ namespace MathEquation
 			, y(y_0) {}
 	};
 
+	struct Radius {
+		double r, angle;
+		Radius(double r_0 = 0, double angle_0 = 0)
+			: r(r_0)
+			, angle(angle_0) {}
+	};
+
 	class Cardioid {
 	private:
 		Point m_center;
@@ -33,11 +40,11 @@ namespace MathEquation
 		Cardioid &set_r(double);
 		Point get_center() const;
 		double get_r() const;
-		double polar_distance(double) const;
+		double polar_distance(const double &) const;
 		Point *most_distant_points() const;
-		double **r_of_curvature() const;
+		Radius *r_of_curvature() const;
 		double area() const;
-		double polar_arc_lenght(const double) const;
+		double polar_arc_lenght(const double &) const;
 	};
 }
 

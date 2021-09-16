@@ -1,5 +1,10 @@
 #include "menu.h" 
 
+const char *invalid_input::what() const throw()
+{
+	return "Invalid input or end of file";
+}
+
 const char *FUNCS[] = {"0. Quit",
                                           "1. Calculate distance to the center in polar coordinate system",
                                           "2. Get coordinates of points farthest from the cardioid axis",
@@ -26,55 +31,41 @@ int dialog(const char *funcs[], int n)
 	return choice;
 }
 
-const char *invalid_input::what() const throw()
-{
-	return "Invalid input or end of file";
-}
-
-const char *eof_exception::what() const throw()
-{
-	return "Invalid input or end of file";
-}
-
-double *get_positive_number(const char *msg, double &num)
+double *get_radius(double &r)
 {
 	const char *err = "";
 	do {
 		std::cout << err << std::endl;
-		std::cout << msg;
-		std::cin >> num;
+		std::cout << "Enter radius: ";
+		std::cin >> r;
 		err = "Enter a positive real number...";
-		if (std::cin.eof()) {
-			throw eof_exception();
-			return nullptr;
-		}
 		if (!std::cin.good()) {
 			throw invalid_input();
 			return nullptr;
 		}
-	} while (num <= 0);
-	return &num;
-}
-
-double *get_radius(double &r)
-{
-	if (!get_positive_number("Enter radius: ", r)) {
-		return nullptr;
-	}
+	} while (r <= 0);
 	return &r;
 }
 
-double degrees_to_radians(double angle)
+double degrees_to_radians(const double &angle)
 {
 	return (M_PI * angle) / 180;
 }
 
 double *get_angle(double &radians)
 {
-	double angle;
-	if (!get_positive_number("Enter angle in degrees: ", angle)) {
-		return nullptr;
-	}
+	int angle;	
+	const char *err = "";
+	do {
+		std::cout << err << std::endl;
+		std::cout << "Enter angle in degrees: ";
+		std::cin >> angle;
+		err = "Incorrect input...";
+		if (!std::cin.good()) {
+			throw invalid_input();
+			return nullptr;
+		}
+	} while (angle < INT_MIN || angle > INT_MAX);
 	radians = degrees_to_radians(angle);
 	return &radians;
 }
