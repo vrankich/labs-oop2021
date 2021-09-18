@@ -2,7 +2,7 @@
 
 const char *invalid_input::what() const throw()
 {
-	return "Invalid input or end of file";
+	return "\nInvalid input or end of file\n";
 }
 
 const char *FUNCS[] = {"0. Quit",
@@ -20,7 +20,7 @@ int dialog(const char *funcs[], int n)
 	int choice;
 	do {
 		std::cout << err << std::endl;
-		err = "Incorrect input...";
+		err = "\nIncorrect input...\n";
 		for (int i = 0; i < n; i++) {
 			std::cout << funcs[i] << std::endl;
 		}
@@ -38,7 +38,7 @@ double *get_radius(double &r)
 		std::cout << err << std::endl;
 		std::cout << "Enter radius: ";
 		std::cin >> r;
-		err = "Enter a positive real number...";
+		err = "\nEnter a positive real number...\n";
 		if (!std::cin.good()) {
 			return nullptr;
 		}
@@ -54,25 +54,30 @@ double degrees_to_radians(const double &angle)
 
 double *get_angle(double &radians)
 {
-	int angle;	
-	const char *err = "";
-	do {
-		std::cout << err << std::endl;
-		std::cout << "Enter angle in degrees: ";
-		std::cin >> angle;
-		err = "Incorrect input...";
-		if (!std::cin.good()) {
-			throw invalid_input();
-			return nullptr;
-		}
-	} while (angle < 0 || angle > INT_MAX);
-	radians = degrees_to_radians(angle);
-	return &radians;
+	try {
+		int angle;	
+		const char *err = "";
+		do {
+			std::cout << err << std::endl;
+			std::cout << "Enter angle in degrees: ";
+			std::cin >> angle;
+			err = "Incorrect input...";
+			if (!std::cin.good()) {
+				throw invalid_input();
+			}
+		} while (angle < 0 || angle > INT_MAX);
+		radians = degrees_to_radians(angle);
+		return &radians;
+	} catch(std::exception &e) {
+		std::cout << e.what() << std::endl;
+		return nullptr;
+	}
 }
 
 heart::Cardioid *get_cardioid(heart::Cardioid &c)
 {
 	try {
+		std::cout << "\n- NEW CARDIOID -\n";
 		double r;
 		if (!get_radius(r)) {
 			throw invalid_radius();
@@ -100,7 +105,6 @@ void menu()
 		c = dialog(FUNCS, FUNCS_SIZE);
 		switch(c) {
 			case 0:
-			// quit
 				break;
 			case 1:
 				if (!get_angle(angle)) {
@@ -111,11 +115,13 @@ void menu()
 				break;
 			case 2:
 				points = cardioid.most_distant_points();
+				std::cin.ignore(32767, '\n');
 				std::cout << "\n(x1, y1) = (" << points.point1.x << ", " << points.point1.y << ")";
 				std::cout << "\n(x2, y2) = (" << points.point2.x << ", " << points.point2.y << ")";
 				std::cout << std::endl;
 				break;
 			case 3:
+				std::cout << std::endl;
 				radii = cardioid.r_of_curvature();
 				for (int i = 0; i < 4; i++) {
 					std::cout << "Radius of curvature for " << radii[i].angle << ": ";
