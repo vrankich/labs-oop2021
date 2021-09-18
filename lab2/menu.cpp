@@ -46,6 +46,7 @@ double *get_radius(double &r)
 	return &r;
 }
 
+// negative angle 
 double degrees_to_radians(const double &angle)
 {
 	return (M_PI * angle) / 180;
@@ -64,39 +65,18 @@ double *get_angle(double &radians)
 			throw invalid_input();
 			return nullptr;
 		}
-	} while (angle < INT_MIN || angle > INT_MAX);
+	} while (angle < 0 || angle > INT_MAX);
 	radians = degrees_to_radians(angle);
 	return &radians;
-}
-
-heart::Point *get_point(const char *msg, heart::Point &p)
-{
-	std::cout << msg;
-	std::cout << "x coordinate ---> ";
-	std::cin >> p.x;
-	if (!std::cin.good()) {
-		return nullptr;
-	}
-	std::cout << "y coordinate ---> ";
-	std::cin >> p.y;
-	if (!std::cin.good()) {
-		return nullptr;
-	}
-	return &p;
 }
 
 heart::Cardioid *get_cardioid(heart::Cardioid &c)
 {
 	try {
 		double r;
-		heart::Point p;
-		if (!get_point("\nEnter coordinates of a center:\n", p)) {
-			throw invalid_input();
-		}
 		if (!get_radius(r)) {
 			throw invalid_radius();
 		}
-		c.set_center(p);
 		c.set_r(r);
 		return &c;
 	} catch (std::exception &e) {
@@ -114,6 +94,7 @@ void menu()
 
 	double angle;
 	heart::Radius *radii = nullptr;
+	heart::MostDistantPoints points;
 	int c = 0;
 	do {
 		c = dialog(FUNCS, FUNCS_SIZE);
@@ -129,7 +110,10 @@ void menu()
 				std::cout << cardioid.polar_distance(angle) << std::endl;
 				break;
 			case 2:
-
+				points = cardioid.most_distant_points();
+				std::cout << "\n(x1, y1) = (" << points.point1.x << ", " << points.point1.y << ")";
+				std::cout << "\n(x2, y2) = (" << points.point2.x << ", " << points.point2.y << ")";
+				std::cout << std::endl;
 				break;
 			case 3:
 				radii = cardioid.r_of_curvature();

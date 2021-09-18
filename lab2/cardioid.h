@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <exception> 
 //#include <strstream> // ???
-//#include  "gtest/gtest_prod.h"
 
 class invalid_radius: public std::exception {
 	virtual const char* what() const throw();
@@ -18,6 +17,14 @@ namespace MathEquation
 		Point(double x_0 = 0, double y_0 = 0)
 			: x(x_0)
 			, y(y_0) {}
+	};
+
+	struct MostDistantPoints {
+		Point point1;
+		Point point2;
+//		MostDistantPoints(Point &p1, Point &p2)
+//			: point1(p1)
+//			, point2(p2) {}
 	};
 
 	struct Radius {
@@ -33,18 +40,14 @@ namespace MathEquation
 		double m_r;
 	public:
 		Cardioid(double r = 1);
-		Cardioid(const Point &p, double r = 1);
-		Cardioid(double x_0, double y_0, double r = 1);
 		~Cardioid() = default;
-		Cardioid &set_center(const Point &);
 		Cardioid &set_r(double);
-		Point get_center() const;
-		double get_r() const;
-		double polar_distance(const double &) const;
-		Point *most_distant_points() const;
-		Radius *r_of_curvature() const;
-		double area() const;
-		double polar_arc_lenght(const double &) const;
+		inline double get_r() const { return this->m_r; }
+		double polar_distance(const double &) const noexcept;
+		MostDistantPoints most_distant_points() const noexcept;
+		Radius *r_of_curvature() const noexcept;
+		double area() const noexcept;
+		double polar_arc_lenght(const double &) const noexcept;
 	};
 }
 
