@@ -1,10 +1,7 @@
 #pragma once
 
-#include <math.h> 
-#include <string.h>
-#include <stdio.h>
+#include <cmath> 
 #include <exception> 
-//#include <strstream> // ???
 
 class invalid_radius: public std::exception {
 	virtual const char* what() const throw();
@@ -26,9 +23,7 @@ namespace MathEquation
 
 	struct Radius {
 		double r, angle;
-		Radius(double r_0 = 0, double angle_0 = 0)
-			: r(r_0)
-			, angle(angle_0) {}
+		Radius(double r_0 = 0, double angle_0 = 0);
 	};
 
 	class Cardioid {

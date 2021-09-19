@@ -7,6 +7,15 @@ const char *invalid_radius::what() const throw()
 
 namespace MathEquation 
 {
+	Radius::Radius(double r_0, double angle_0)
+	{
+		if (r_0 < 0) {
+			throw invalid_radius();
+		}
+		r = r_0;
+		angle = angle_0;
+	}
+
 	Cardioid::Cardioid(double r)
 	 {
 			if (r < 0) {
@@ -29,14 +38,13 @@ namespace MathEquation
 		return 2 * r * (1 - cos(angle));
 	}
 
-	/* Вернуть расстояние до центра в полярной системе координат
-	 * в зависимости от угла для точки принадлежащей кардиоиде */
+	/* return distance to the center in polar coordinate system */
 	double Cardioid::polar_distance(const double &angle) const noexcept
 	{
 		return 2 * this->m_r * (1 + cos(angle));
 	}
 
-	/* Вернуть координаты наиболее удаленных от оси кардиоиды точек */
+	/* return points, farthest from the cardioid axis */
 	MostDistantPoints Cardioid::most_distant_points() const noexcept
 	{
 		MostDistantPoints points;
@@ -52,7 +60,7 @@ namespace MathEquation
 		return (8 / 3) * r * sin(angle / 2);
 	}
 
-	/* Вернуть радиуса кривизны в характерных точках кардиоиды */
+	/* return radii of curvature at characteristic points of cardioid */
 	Radius *Cardioid::r_of_curvature() const noexcept
 	{
 		Radius *r_arr = new Radius[4];
@@ -70,13 +78,13 @@ namespace MathEquation
 		return r_arr;
 	}
 
-	/* Вернуть площадь описываемую кардиоидой */
+	/* return area inside of cardioid */
 	double Cardioid::area() const noexcept
 	{
 		return 6 * M_PI * this->m_r;
 	}
 
-	/* Вернуть длину дуги кардиоиды в зависимости от угла полярного радиуса */
+	/* return arc length of cardioid */
 	double Cardioid::polar_arc_lenght(const double &angle) const noexcept
 	{
 		double r_polar = calculate_r_polar(this->m_r, angle);

@@ -8,7 +8,7 @@ const char *invalid_input::what() const throw()
 const char *FUNCS[] = {"0. Quit",
 					   "1. Calculate distance to the center in polar coordinate system",
                        "2. Get coordinates of points farthest from the cardioid axis",
-                       "3. Get radius of curvature at characteristic points",
+                       "3. Get radii of curvature at characteristic points",
                        "4. Calculate area",
                        "5. Calculate arc length"};
 
@@ -42,6 +42,7 @@ double *get_radius(double &r)
 		if (!std::cin.good()) {
 			return nullptr;
 		}
+		std::cin.ignore(32767, '\n');
 	} while (r <= 0);
 	return &r;
 }
@@ -64,6 +65,7 @@ double *get_angle(double &radians)
 			if (!std::cin.good()) {
 				throw invalid_input();
 			}
+			std::cin.ignore(32767, '\n');
 		} while (angle < 0 || angle > INT_MAX);
 		radians = degrees_to_radians(angle);
 		return &radians;
@@ -110,11 +112,10 @@ void menu()
 					return;
 				}
 				std::cout << std::endl;
-				std::cout << cardioid.polar_distance(angle) << std::endl;
+				std::cout << "Distance: " <<cardioid.polar_distance(angle) << std::endl;
 				break;
 			case 2:
 				points = cardioid.most_distant_points();
-				std::cin.ignore(32767, '\n');
 				std::cout << "\n(x1, y1) = (" << points.point1.x << ", " << points.point1.y << ")";
 				std::cout << "\n(x2, y2) = (" << points.point2.x << ", " << points.point2.y << ")";
 				std::cout << std::endl;
@@ -123,21 +124,22 @@ void menu()
 				std::cout << std::endl;
 				radii = cardioid.r_of_curvature();
 				for (int i = 0; i < 4; i++) {
-					std::cout << "Radius of curvature for " << radii[i].angle << ": ";
+					std::cout << std::fixed << std::setprecision(2);
+					std::cout << "Radius of curvature for angle " << radii[i].angle << ": ";
 					std::cout << radii[i].r << std::endl;
 				}
 				delete [] radii;
 				break;
 			case 4:
 				std::cout << std::endl;
-				std::cout << cardioid.area() << std::endl;
+				std::cout << "Area: " << cardioid.area() << std::endl;
 				break;
 			case 5:
 				if (!get_angle(angle)) {
 					return;
 				}
 				std::cout << std::endl;
-				std::cout << cardioid.polar_arc_lenght(angle) << std::endl;
+				std::cout << "Arc lenght: " << cardioid.polar_arc_lenght(angle) << std::endl;
 				break;
 		}
 	} while (c != 0);

@@ -1,8 +1,36 @@
 #include "tests.h"
 
+void test_structures()
+{
+	/* test constructor */
+	heart::Point p1;
+	assert(p1.x == 0);
+	assert(p1.y == 0);
+	heart::Point p2(2.7, -7.2);
+	assert(p2.x == 2.7);
+	assert(p2.y == -7.2);
+	heart::Radius r_struct1;
+	assert(r_struct1.r == 0);
+	assert(r_struct1.angle == 0);
+	heart::Radius r_struct2(2.02, 22);
+	assert(r_struct2.r == 2.02);
+	assert(r_struct2.angle == 22);
+
+	/* test exception */
+	bool is_thrown = false;
+	try {
+		heart::Radius r_struct3(-3, 10);
+	} catch(std::exception &e) {
+		is_thrown = true;
+	}
+	assert(is_thrown);
+}
+
 void test_initialization()
 {
 	/* test constructor */
+	heart::Cardioid cardioid;
+	assert(cardioid.get_r() == 1);
 	heart::Cardioid cardioid1(5.123);
 	assert(cardioid1.get_r() == 5.123);
 
@@ -47,11 +75,20 @@ void test_polar_distance()
 
 void test_most_distant_points()
 {
-	heart::Cardioid cardioid(3.50);
-	heart::MostDistantPoints points = cardioid.most_distant_points();
+	heart::MostDistantPoints points;
+
+	heart::Cardioid cardioid1(3.50);
+	points = cardioid1.most_distant_points();
 	assert(points.point1.x == (3 * 3.50) / 2);
 	assert(points.point1.y == 0);
 	assert(points.point2.x == - (3 * 3.50) / 2);
+	assert(points.point2.y == 0);
+
+	heart::Cardioid cardioid2(120);
+	points = cardioid2.most_distant_points();
+	assert(points.point1.x == (3 * 120) / 2);
+	assert(points.point1.y == 0);
+	assert(points.point2.x == - (3 * 120) / 2);
 	assert(points.point2.y == 0);
 }
 
@@ -100,6 +137,7 @@ void test_polar_arc_lenght()
 
 void call_tests()
 {
+	test_structures();
 	test_initialization();
 	test_polar_distance();
 	test_most_distant_points();
