@@ -2,7 +2,7 @@
 
 const char *invalid_radius::what() const throw()
 {
-	return "Invalid radius";
+	return "\nInvalid radius\n";
 }
 
 namespace MathEquation 

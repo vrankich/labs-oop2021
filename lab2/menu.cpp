@@ -6,11 +6,11 @@ const char *invalid_input::what() const throw()
 }
 
 const char *FUNCS[] = {"0. Quit",
-                    "1. Calculate distance to the center in polar coordinate system",
-                    "2. Get coordinates of points farthest from the cardioid axis",
-                    "3. Get radius of curvature at characteristic points",
-                    "4. Calculate area",
-                    "5. Calculate arc length"};
+					   "1. Calculate distance to the center in polar coordinate system",
+                       "2. Get coordinates of points farthest from the cardioid axis",
+                       "3. Get radius of curvature at characteristic points",
+                       "4. Calculate area",
+                       "5. Calculate arc length"};
 
 const int FUNCS_SIZE = sizeof(FUNCS) / sizeof(FUNCS[0]);
 
@@ -46,7 +46,6 @@ double *get_radius(double &r)
 	return &r;
 }
 
-// negative angle 
 double degrees_to_radians(const double &angle)
 {
 	return (M_PI * angle) / 180;

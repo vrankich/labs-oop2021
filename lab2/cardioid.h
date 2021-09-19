@@ -22,9 +22,6 @@ namespace MathEquation
 	struct MostDistantPoints {
 		Point point1;
 		Point point2;
-//		MostDistantPoints(Point &p1, Point &p2)
-//			: point1(p1)
-//			, point2(p2) {}
 	};
 
 	struct Radius {
@@ -36,7 +33,6 @@ namespace MathEquation
 
 	class Cardioid {
 	private:
-		Point m_center;
 		double m_r;
 	public:
 		Cardioid(double r = 1);
