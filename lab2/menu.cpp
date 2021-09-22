@@ -1,10 +1,5 @@
 #include "menu.h" 
 
-const char *invalid_input::what() const throw()
-{
-	return "\nInvalid input or end of file\n";
-}
-
 const char *FUNCS[] = {"0. Quit",
 					   "1. Calculate distance to the center in polar coordinate system",
                        "2. Get coordinates of points farthest from the cardioid axis",
@@ -31,98 +26,94 @@ int dialog(const char *funcs[], int n)
 	return choice;
 }
 
-double *get_radius(double &r)
+bool is_ivalid_radius(const double &r)
+{
+	return r <= 0;
+}
+
+bool is_invalid_andle(const double &angle)
+{
+	return angle < 0;
+}
+
+error get_value(bool (*cond)(const double &), const char *err_msg, 
+	                         const char *msg, double &v)
 {
 	const char *err = "";
 	do {
 		std::cout << err << std::endl;
-		std::cout << "Enter radius: ";
-		std::cin >> r;
-		err = "\nEnter a positive real number...\n";
-		if (!std::cin.good()) {
-			return nullptr;
+		std::cout << msg;
+		std::cin >> v;
+		err = err_msg;
+		if (std::cin.bad()) { return INPUT_CRASH; }
+		if (std::cin.eof()) { return END_OF_FILE; }
+		if (std::cin.fail()) { 
+			std::cin.clear(); 
+			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			continue; 
 		}
 		std::cin.ignore(32767, '\n');
-	} while (r <= 0);
-	return &r;
+	} while (cond(v));
+	return SUCCESS;
 }
 
 double degrees_to_radians(const double &angle)
 {
-	return (M_PI * angle) / 180;
+	return (PI * angle) / 180;
 }
 
-double *get_angle(double &radians)
-{
-	try {
-		int angle;	
-		const char *err = "";
-		do {
-			std::cout << err << std::endl;
-			std::cout << "Enter angle in degrees: ";
-			std::cin >> angle;
-			err = "Incorrect input...";
-			if (!std::cin.good()) {
-				throw invalid_input();
-			}
-			std::cin.ignore(32767, '\n');
-		} while (angle < 0 || angle > INT_MAX);
-		radians = degrees_to_radians(angle);
-		return &radians;
-	} catch(std::exception &e) {
-		std::cout << e.what() << std::endl;
-		return nullptr;
-	}
-}
-
-heart::Cardioid *get_cardioid(heart::Cardioid &c)
+error get_cardioid(heart::Cardioid &c)
 {
 	try {
 		std::cout << "\n- NEW CARDIOID -\n";
 		double r;
-		if (!get_radius(r)) {
-			throw invalid_radius();
-		}
-		c.set_r(r);
-		return &c;
-	} catch (std::exception &e) {
+		error err_type = get_value(&is_ivalid_radius, "\nIvalid radius...\n", "Enter radius: ", r);
+		if (err_type == SUCCESS) { c.set_r(r); }
+		return err_type;
+	} catch(std::exception &e) {
 		std::cout << e.what() << std::endl;
-		return nullptr;
+		return INVALID_RADIUS;
 	}
 }
 
 void menu()
 {
 	heart::Cardioid cardioid;
-	if (!get_cardioid(cardioid)) {
+	if (get_cardioid(cardioid) != SUCCESS) {
+		std::cout << "\nInvalid input or end of file...\n" << std::endl;
 		return;
 	}
 
-	double angle;
-	heart::Radius *radii = nullptr;
-	heart::MostDistantPoints points;
 	int c = 0;
+	double angle;
+	error err_type;
 	do {
 		c = dialog(FUNCS, FUNCS_SIZE);
 		switch(c) {
 			case 0:
 				break;
 			case 1:
-				if (!get_angle(angle)) {
-					return;
+				err_type = get_value(&is_invalid_andle, "\nInvalid input...\n", "Enter angle in degrees: ", angle);
+				if (err_type == INPUT_CRASH || err_type == END_OF_FILE) {
+					std::cout << "\nInvalid input or end of file...\n" << std::endl;
+					c = 0;
+					break;
 				}
 				std::cout << std::endl;
 				std::cout << "Distance: " <<cardioid.polar_distance(angle) << std::endl;
 				break;
 			case 2:
-				points = cardioid.most_distant_points();
+			{
+				heart::MostDistantPoints points = cardioid.most_distant_points();
 				std::cout << "\n(x1, y1) = (" << points.point1.x << ", " << points.point1.y << ")";
 				std::cout << "\n(x2, y2) = (" << points.point2.x << ", " << points.point2.y << ")";
 				std::cout << std::endl;
 				break;
+			}
 			case 3:
+			{
 				std::cout << std::endl;
-				radii = cardioid.r_of_curvature();
+				heart::Radius *radii = cardioid.r_of_curvature();
 				for (int i = 0; i < 4; i++) {
 					std::cout << std::fixed << std::setprecision(2);
 					std::cout << "Radius of curvature for angle " << radii[i].angle << ": ";
@@ -130,13 +121,17 @@ void menu()
 				}
 				delete [] radii;
 				break;
+			}
 			case 4:
 				std::cout << std::endl;
 				std::cout << "Area: " << cardioid.area() << std::endl;
 				break;
 			case 5:
-				if (!get_angle(angle)) {
-					return;
+				err_type = get_value(&is_invalid_andle, "\nInvalid input...\n", "Enter angle: ", angle);
+				if (err_type == INPUT_CRASH || err_type == END_OF_FILE) {
+					std::cout << "\nInvalid input or end of file...\n" << std::endl;
+					c = 0;
+					break;
 				}
 				std::cout << std::endl;
 				std::cout << "Arc lenght: " << cardioid.polar_arc_lenght(angle) << std::endl;

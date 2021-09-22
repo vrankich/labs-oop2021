@@ -7,6 +7,8 @@ class invalid_radius: public std::exception {
 	virtual const char* what() const throw();
 };
 
+constexpr double PI = 3.14159265358979;
+
 namespace MathEquation 
 {
 	struct Point {
@@ -32,12 +34,13 @@ namespace MathEquation
 	public:
 		Cardioid(double r = 1);
 		~Cardioid() = default;
-		Cardioid &set_r(double);
+		inline void set_r(const double r) { r < 0 ? throw invalid_radius() : this->m_r = r; }
 		inline double get_r() const { return this->m_r; }
-		double polar_distance(const double &) const noexcept;
+		inline double polar_distance(const double &angle) const noexcept 
+			{  return 2 * this->m_r * (1 + cos(angle)); }
 		MostDistantPoints most_distant_points() const noexcept;
-		Radius *r_of_curvature() const noexcept;
-		double area() const noexcept;
+		Radius *r_of_curvature() const noexcept; 
+		inline double area() const noexcept { return 6 * PI * this->m_r; }
 		double polar_arc_lenght(const double &) const noexcept;
 	};
 }

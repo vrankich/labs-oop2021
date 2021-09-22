@@ -24,26 +24,6 @@ namespace MathEquation
 			this->m_r = r;
 		}
 
-	Cardioid& Cardioid::set_r(double r)
-	{
-		if (r < 0) {
-			throw invalid_radius();
-		}
-		this->m_r = r;
-		return *this;
-	}
-
-	const double calculate_r_polar(const double &r, const double &angle)
-	{
-		return 2 * r * (1 - cos(angle));
-	}
-
-	/* return distance to the center in polar coordinate system */
-	double Cardioid::polar_distance(const double &angle) const noexcept
-	{
-		return 2 * this->m_r * (1 + cos(angle));
-	}
-
 	/* return points, farthest from the cardioid axis */
 	MostDistantPoints Cardioid::most_distant_points() const noexcept
 	{
@@ -66,9 +46,9 @@ namespace MathEquation
 		Radius *r_arr = new Radius[4];
 		
 		r_arr[0].angle = 0;
-		r_arr[1].angle = M_PI / 6;
-		r_arr[2].angle = M_PI / 4;
-		r_arr[3].angle = M_PI / 3;
+		r_arr[1].angle = PI / 6;
+		r_arr[2].angle = PI / 4;
+		r_arr[3].angle = PI / 3;
 		
 		r_arr[0].r = calculate_r_of_curvature(this->m_r, r_arr[0].angle);
 		r_arr[1].r = calculate_r_of_curvature(this->m_r, r_arr[1].angle);
@@ -78,10 +58,9 @@ namespace MathEquation
 		return r_arr;
 	}
 
-	/* return area inside of cardioid */
-	double Cardioid::area() const noexcept
+	const double calculate_r_polar(const double &r, const double &angle)
 	{
-		return 6 * M_PI * this->m_r;
+		return 2 * r * (1 - cos(angle));
 	}
 
 	/* return arc length of cardioid */

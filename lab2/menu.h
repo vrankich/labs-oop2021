@@ -1,12 +1,17 @@
 #pragma once
 
 #include <iostream>
-#include  <climits> 
+#include  <climits>
+#include <limits> 
 #include <iomanip> 
 #include "cardioid.h" 
 
-class invalid_input: public std::exception {
-	virtual const char* what() const throw();
+enum error {
+	INVALID_INPUT = 0,
+	INPUT_CRASH = 1,
+	END_OF_FILE = 2,
+	INVALID_RADIUS = 3,
+	SUCCESS = 4,
 };
 
 void menu();
