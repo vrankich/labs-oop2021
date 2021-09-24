@@ -7,15 +7,6 @@ const char *invalid_radius::what() const throw()
 
 namespace MathEquation 
 {
-	Radius::Radius(double r_0, double angle_0)
-	{
-		if (r_0 < 0) { 
-			throw invalid_radius(); 
-		}
-		r = r_0;
-		angle = angle_0;
-	}
-
 	Cardioid::Cardioid(double r)
 	 {
 			if (r < 0) { 

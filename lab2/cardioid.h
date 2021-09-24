@@ -18,11 +18,6 @@ namespace MathEquation
 			, y(y_0) {}
 	};
 
-	struct Radius {
-		double r, angle;
-		Radius(double r_0 = 0, double angle_0 = 0);
-	};
-
 	class Cardioid {
 	private:
 		double m_r;
