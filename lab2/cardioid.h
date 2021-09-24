@@ -18,11 +18,6 @@ namespace MathEquation
 			, y(y_0) {}
 	};
 
-	struct MostDistantPoints {
-		Point point1;
-		Point point2;
-	};
-
 	struct Radius {
 		double r, angle;
 		Radius(double r_0 = 0, double angle_0 = 0);
@@ -34,14 +29,13 @@ namespace MathEquation
 	public:
 		Cardioid(double r = 1);
 		~Cardioid() = default;
-		inline void set_r(const double r) { r < 0 ? throw invalid_radius() : this->m_r = r; }
-		inline double get_r() const { return this->m_r; }
-		inline double polar_distance(const double &angle) const noexcept 
-			{  return 2 * this->m_r * (1 + cos(angle)); }
-		MostDistantPoints most_distant_points() const noexcept;
-		Radius *r_of_curvature() const noexcept; 
-		inline double area() const noexcept { return 6 * PI * this->m_r; }
-		double polar_arc_lenght(const double &) const noexcept;
+		void set_r(const double r) { r < 0 ? throw invalid_radius() : this->m_r = r; } /* setter */
+		double get_r() const noexcept { return this->m_r; } /* getter */
+		double polar_distance(const double angle) const noexcept { return 2 * this->m_r * (1 + cos(angle)); }
+		void most_distant_points(Point &, Point &) const noexcept;
+		void radii_of_curvature(double &, double &, double &) const noexcept;
+		double area() const noexcept { return (3 / 2) * PI * pow(this->m_r, 2); }
+		double arc_lenght(const double angle) const noexcept { return 4 * this->m_r * sin(angle / 2); }
 	};
 }
 

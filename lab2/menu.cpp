@@ -14,12 +14,12 @@ int dialog(const char *funcs[], int n)
 	const char *err = "";
 	int choice;
 	do {
-		std::cout << err << std::endl;
-		err = "\nIncorrect input...\n";
+		std::cout << std::endl << err << std::endl;
+		err = "Incorrect input...";
 		for (int i = 0; i < n; i++) {
 			std::cout << funcs[i] << std::endl;
 		}
-		std::cout << "\nMake a choice: ";
+		std::cout << "Make a choice: ";
 		choice = getchar() - '0';
 		while (getchar() != '\n') {}
 	} while (choice < 0 || choice >= n);
@@ -33,7 +33,7 @@ bool is_ivalid_radius(const double &r)
 
 bool is_invalid_andle(const double &angle)
 {
-	return angle < 0;
+	return true;
 }
 
 error get_value(bool (*cond)(const double &), const char *err_msg, 
@@ -59,7 +59,7 @@ error get_value(bool (*cond)(const double &), const char *err_msg,
 
 double degrees_to_radians(const double &angle)
 {
-	return (PI * angle) / 180;
+	return (PI * std::abs(angle)) / 180;
 }
 
 error get_cardioid(heart::Cardioid &c)
@@ -67,7 +67,7 @@ error get_cardioid(heart::Cardioid &c)
 	try {
 		std::cout << "\n- NEW CARDIOID -\n";
 		double r;
-		error err_type = get_value(&is_ivalid_radius, "\nIvalid radius...\n", "Enter radius: ", r);
+		error err_type = get_value(&is_ivalid_radius, "Ivalid radius...", "Enter radius: ", r);
 		if (err_type == SUCCESS) { c.set_r(r); }
 		return err_type;
 	} catch(std::exception &e) {
@@ -80,7 +80,7 @@ void menu()
 {
 	heart::Cardioid cardioid;
 	if (get_cardioid(cardioid) != SUCCESS) {
-		std::cout << "\nInvalid input or end of file...\n" << std::endl;
+		std::cout << "Invalid input or end of file..." << std::endl;
 		return;
 	}
 
@@ -93,7 +93,7 @@ void menu()
 			case 0:
 				break;
 			case 1:
-				err_type = get_value(&is_invalid_andle, "\nInvalid input...\n", "Enter angle in degrees: ", angle);
+				err_type = get_value(&is_invalid_andle, "Invalid input...", "Enter angle in degrees: ", angle);
 				if (err_type == INPUT_CRASH || err_type == END_OF_FILE) {
 					std::cout << "\nInvalid input or end of file...\n" << std::endl;
 					c = 0;
@@ -104,37 +104,35 @@ void menu()
 				break;
 			case 2:
 			{
-				heart::MostDistantPoints points = cardioid.most_distant_points();
-				std::cout << "\n(x1, y1) = (" << points.point1.x << ", " << points.point1.y << ")";
-				std::cout << "\n(x2, y2) = (" << points.point2.x << ", " << points.point2.y << ")";
+				heart::Point point1, point2;
+				cardioid.most_distant_points(point1, point2);
+				std::cout << "\n(x1, y1) = (" << point1.x << ", " << point1.y << ")";
+				std::cout << "\n(x2, y2) = (" << point2.x << ", " << point2.y << ")";
 				std::cout << std::endl;
 				break;
 			}
 			case 3:
-			{
+				double r_of_curv1, r_of_curv2, r_of_curv3;
+				cardioid.radii_of_curvature(r_of_curv1, r_of_curv2, r_of_curv3);
 				std::cout << std::endl;
-				heart::Radius *radii = cardioid.r_of_curvature();
-				for (int i = 0; i < 4; i++) {
-					std::cout << std::fixed << std::setprecision(2);
-					std::cout << "Radius of curvature for angle " << radii[i].angle << ": ";
-					std::cout << radii[i].r << std::endl;
-				}
-				delete [] radii;
+				std::cout << std::fixed << std::setprecision(2);
+				std::cout << "Radius of curvature #1: " << r_of_curv1 << std::endl;
+				std::cout << "Radius of curvature #2: " << r_of_curv2 << std::endl;
+				std::cout << "Radius of curvature #3: " << r_of_curv3 << std::endl;
 				break;
-			}
 			case 4:
 				std::cout << std::endl;
 				std::cout << "Area: " << cardioid.area() << std::endl;
 				break;
 			case 5:
-				err_type = get_value(&is_invalid_andle, "\nInvalid input...\n", "Enter angle: ", angle);
+				err_type = get_value(&is_invalid_andle, "Invalid input...", "Enter angle: ", angle);
 				if (err_type == INPUT_CRASH || err_type == END_OF_FILE) {
-					std::cout << "\nInvalid input or end of file...\n" << std::endl;
+					std::cout << "Invalid input or end of file..." << std::endl;
 					c = 0;
 					break;
 				}
 				std::cout << std::endl;
-				std::cout << "Arc lenght: " << cardioid.polar_arc_lenght(angle) << std::endl;
+				std::cout << "Arc lenght: " << cardioid.arc_lenght(angle) << std::endl;
 				break;
 		}
 	} while (c != 0);
