@@ -19,7 +19,7 @@ int dialog(const char *funcs[], int n)
 		for (int i = 0; i < n; i++) {
 			std::cout << funcs[i] << std::endl;
 		}
-		std::cout << "Make a choice: ";
+		std::cout << "\nMake a choice: ";
 		choice = getchar() - '0';
 		while (getchar() != '\n') {}
 	} while (choice < 0 || choice >= n);
@@ -33,7 +33,7 @@ bool is_ivalid_radius(const double &r)
 
 bool is_invalid_andle(const double &angle)
 {
-	return true;
+	return false;
 }
 
 error get_value(bool (*cond)(const double &), const char *err_msg, 
@@ -59,7 +59,7 @@ error get_value(bool (*cond)(const double &), const char *err_msg,
 
 double degrees_to_radians(const double &angle)
 {
-	return (PI * std::abs(angle)) / 180;
+	return (PI * fabs(angle)) / 180;
 }
 
 error get_cardioid(heart::Cardioid &c)
@@ -99,8 +99,8 @@ void menu()
 					c = 0;
 					break;
 				}
-				std::cout << std::endl;
-				std::cout << "Distance: " <<cardioid.polar_distance(angle) << std::endl;
+				std::cout << std::endl << "Distance: ";
+				std::cout << cardioid.polar_distance(degrees_to_radians(angle)) << std::endl;
 				break;
 			case 2:
 			{
@@ -131,8 +131,8 @@ void menu()
 					c = 0;
 					break;
 				}
-				std::cout << std::endl;
-				std::cout << "Arc lenght: " << cardioid.arc_lenght(angle) << std::endl;
+				std::cout << std::endl << "Arc lenght: ";
+				std::cout << cardioid.arc_lenght(degrees_to_radians(angle)) << std::endl;
 				break;
 		}
 	} while (c != 0);

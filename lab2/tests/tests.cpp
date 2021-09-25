@@ -1,6 +1,11 @@
 #include "tests.h"
 
-void test_structures()
+bool compare(double a, double b, double eps)
+{
+	return fabs(a - b) < eps;
+}
+
+void test_struct_Point()
 {
 	/* test constructor */
 	heart::Point p1;
@@ -9,21 +14,9 @@ void test_structures()
 	heart::Point p2(2.7, -7.2);
 	assert(p2.x == 2.7);
 	assert(p2.y == -7.2);
-	heart::Radius r_struct1;
-	assert(r_struct1.r == 0);
-	assert(r_struct1.angle == 0);
-	heart::Radius r_struct2(2.02, 22);
-	assert(r_struct2.r == 2.02);
-	assert(r_struct2.angle == 22);
-
-	/* test exception */
-	bool is_thrown = false;
-	try {
-		heart::Radius r_struct3(-3, 10);
-	} catch(std::exception &e) {
-		is_thrown = true;
-	}
-	assert(is_thrown);
+	heart::Point p3(-10, 0.01);
+	assert(p3.x == -10);
+	assert(p3.y == 0.01);
 }
 
 void test_initialization()
@@ -65,83 +58,130 @@ void test_initialization()
 
 void test_polar_distance()
 {
-	heart::Cardioid cardioid(27.5);
-	double res = cardioid.polar_distance(2.355);
-	assert(round(res * 10000) / 10000 == 16.1556);
-	assert(cardioid.polar_distance(0) == 110);
-	assert(round(cardioid.polar_distance(PI)) == 0);
-	assert(round(cardioid.polar_distance(2 * PI)) == 110);
+	heart::Cardioid cardioid1;
+	assert(compare(cardioid1.polar_distance(0), 4, 	EPSILON));
+	assert(compare(cardioid1.polar_distance(PI / 6), 3.7320508, 	EPSILON));
+	assert(compare(cardioid1.polar_distance(PI / 2), 2, 	EPSILON));
+	
+	heart::Cardioid cardioid2(27.5);
+	assert(compare(cardioid2.polar_distance(0), 110, 	EPSILON));
+	assert(compare(cardioid2.polar_distance(PI / 6), 102.6313972, EPSILON));
+	assert(compare(cardioid2.polar_distance(PI / 2), 55, EPSILON));
+
+	heart::Cardioid arr[3];
+	arr[1].set_r(3);
+	arr[2].set_r(0.0001);
+	assert(compare(arr[0].polar_distance(PI / 3), 3, 	EPSILON));
+	assert(compare(arr[1].polar_distance(PI / 3), 9, 	EPSILON));
+	assert(compare(arr[2].polar_distance(PI / 3), 0.0003, EPSILON));
 }
 
 void test_most_distant_points()
 {
-	heart::MostDistantPoints points;
+	heart::Point point1, point2;
+	double x, y;
 
-	heart::Cardioid cardioid1(3.50);
-	points = cardioid1.most_distant_points();
-	assert(points.point1.x == (3 * 3.50) / 2);
-	assert(points.point1.y == 0);
-	assert(points.point2.x == - (3 * 3.50) / 2);
-	assert(points.point2.y == 0);
-
-	heart::Cardioid cardioid2(120);
-	points = cardioid2.most_distant_points();
-	assert(points.point1.x == (3 * 120) / 2);
-	assert(points.point1.y == 0);
-	assert(points.point2.x == - (3 * 120) / 2);
-	assert(points.point2.y == 0);
+	heart::Cardioid cardioid(0.00002);
+	cardioid.most_distant_points(point1, point2);
+	x = (3.0 / 4) * 0.00002;
+	assert(point1.x == x);
+	assert(point2.x == x);
+	y = 2.5981E-5;
+	assert(compare(point1.y, y, EPSILON));
+	assert(compare(point2.y, -y, EPSILON));
+	
+	heart::Cardioid arr[3];
+	arr[1].set_r(0.0123);
+	arr[2].set_r(150);
+	arr[0].most_distant_points(point1, point2);
+	x = 3.0 / 4;
+	assert(point1.x == x);
+	assert(point2.x == x);
+	y = 1.2990381;
+	assert(compare(point1.y, y, EPSILON));
+	assert(compare(point2.y, -y, EPSILON));
+	arr[1].most_distant_points(point1, point2);
+	x = (3.0 / 4) * 0.0123;
+	assert(point1.x == x);
+	assert(point2.x == x);
+	y = 0.01597817;
+	assert(compare(point1.y, y, EPSILON));
+	assert(compare(point2.y, -y, EPSILON));
+	arr[2].most_distant_points(point1, point2);
+	x = (3.0 / 4) * 150;
+	assert(point1.x == x);
+	assert(point2.x == x);
+	y = 194.85571585;
+	assert(compare(point1.y, y, EPSILON));
+	assert(compare(point2.y, -y, EPSILON));
 }
 
-void test_r_of_curvature()
+void test_radii_of_curvature()
 {
-	heart::Cardioid cardioid(10);
-	heart::Radius *radii = cardioid.r_of_curvature();
-	assert(radii[0].angle == 0);
-	assert(radii[0].r == 0);
-	assert(radii[1].angle == PI / 6);
-	assert(radii[1].r == (8 / 3) * 10 * sin(PI / 12));
-	assert(radii[2].angle == PI / 4);
-	assert(radii[2].r == (8 / 3) * 10 * sin(PI / 8));
-	assert(radii[3].angle == PI / 3);
-	assert(radii[3].r == (8 / 3) * 10 * sin(PI / 6));
-	delete [] radii;
+	double rad1, rad2, rad3;
+	
+	heart::Cardioid cardioid(0.01);
+	cardioid.radii_of_curvature(rad1, rad2, rad3);
+	assert(compare(rad1, (4.0 / 3) * 0.01, EPSILON));
+	assert(rad2 == 0);
+	assert(rad3 == 0);
+
+	cardioid.set_r(80.5);
+	cardioid.radii_of_curvature(rad1, rad2, rad3);
+	assert(compare(rad1, (4.0 / 3) * 80.5, EPSILON));
+	assert(rad2 == 0);
+	assert(rad3 == 0);
+
+	heart::Cardioid arr[2];
+	arr[0].set_r(5.99);
+	arr[1].set_r(390);
+	arr[0].radii_of_curvature(rad1, rad2, rad3);
+	assert(compare(rad1, (4.0 / 3) * 5.99, EPSILON));
+	assert(rad2 == 0);
+	assert(rad3 == 0);
+	arr[1].radii_of_curvature(rad1, rad2, rad3);
+	assert(compare(rad1, (4.0 / 3) * 390, EPSILON));
+	assert(rad2 == 0);
+	assert(rad3 == 0);
 }
 
 void test_area()
 {
 	heart::Cardioid cardioid;
-	assert(round(cardioid.area() * 1000) / 1000 == 18.850);
+	cardioid.set_r(0.00027);
+	assert(compare(cardioid.area(), 3.43533E-07, EPSILON));
 	cardioid.set_r(15.01);
-	assert(round(cardioid.area() * 1000) / 1000 == 282.932);
+	assert(compare(cardioid.area(), 1061.7017, EPSILON_BIG));
 
-	heart::Cardioid cardioids[3];
-	cardioids[0].set_r(3.333);
-	cardioids[1].set_r(4.4444);
-	cardioids[2].set_r(5.55555);
-	assert(round(cardioids[0].area() * 100) / 100 == 62.83);
-	assert(round(cardioids[1].area() * 100) / 100 == 83.77);
-	assert(round(cardioids[2].area() * 100) / 100 == 104.72);
+	heart::Cardioid arr[3];
+	arr[0].set_r(0.0033);
+	arr[1].set_r(4.44);
+	arr[2].set_r(555);
+	assert(compare(arr[0].area(), 5.13179E-05, EPSILON));
+	assert(compare(arr[1].area(), 92.8981514, EPSILON));
+	assert(compare(arr[2].area(), 1451533.6156, EPSILON_BIG));
 }
 
 void test_polar_arc_lenght()
 {
-	heart::Cardioid cardioid(0.99);
 	double res;
-	res = cardioid.polar_arc_lenght(PI / 4);
-	assert(round(res * 10000) / 10000 == 1.3589);
-	res = cardioid.polar_arc_lenght((5 * PI) / 6);
-	assert(round(res * 10000) / 10000 == 55.1557);
-	res = cardioid.polar_arc_lenght(PI / 2);
-	assert(round(res * 10000) / 10000 == 15.8400);
+
+	heart::Cardioid cardioid(0.0099);
+	res = cardioid.arc_lenght(PI / 4);
+	
+	res = cardioid.arc_lenght((5 * PI) / 6);
+	
+	res = cardioid.arc_lenght(PI / 2);
+
 }
 
 int call_tests()
 {
-	test_structures();
+	test_struct_Point();
 	test_initialization();
 	test_polar_distance();
 	test_most_distant_points();
-	test_r_of_curvature();
+	test_radii_of_curvature();
 	test_area();
 	test_polar_arc_lenght();
 	std::cout << "\nNo errors found...\n" << std::endl;
