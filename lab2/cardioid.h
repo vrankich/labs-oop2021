@@ -26,11 +26,13 @@ namespace MathEquation
 		~Cardioid() = default;
 		void set_r(const double r) { r < 0 ? throw invalid_radius() : this->m_r = r; } /* setter */
 		double get_r() const noexcept { return this->m_r; } /* getter */
-		double polar_distance(const double angle) const noexcept { return 2 * this->m_r * (1 + cos(angle)); }
+		double polar_distance(const double angle) const noexcept 
+			{ return this->m_r * (1 + fabs(cos(angle))); }
 		void most_distant_points(Point &, Point &) const noexcept;
 		void radii_of_curvature(double &, double &, double &) const noexcept;
 		double area() const noexcept { return (3.0 / 2) * PI * this->m_r * this->m_r; }
-		double arc_lenght(const double angle) const noexcept { return 4 * this->m_r * sin(angle / 2); }
+		double arc_lenght(const double angle) const noexcept 
+			{ return fabs(4 * this->m_r * sin(angle / 2)); }
 	};
 }
 

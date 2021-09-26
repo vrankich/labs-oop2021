@@ -59,21 +59,21 @@ void test_initialization()
 void test_polar_distance()
 {
 	heart::Cardioid cardioid1;
-	assert(compare(cardioid1.polar_distance(0), 4, 	EPSILON));
-	assert(compare(cardioid1.polar_distance(PI / 6), 3.7320508, 	EPSILON));
-	assert(compare(cardioid1.polar_distance(PI / 2), 2, 	EPSILON));
+	assert(compare(cardioid1.polar_distance(0), 2, 	EPSILON));
+	assert(compare(cardioid1.polar_distance(PI / 6), 3.7320508 / 2, 	EPSILON));
+	assert(compare(cardioid1.polar_distance(PI / 2), 1, 	EPSILON));
 	
 	heart::Cardioid cardioid2(27.5);
-	assert(compare(cardioid2.polar_distance(0), 110, 	EPSILON));
-	assert(compare(cardioid2.polar_distance(PI / 6), 102.6313972, EPSILON));
-	assert(compare(cardioid2.polar_distance(PI / 2), 55, EPSILON));
+	assert(compare(cardioid2.polar_distance(0), 55, 	EPSILON));
+	assert(compare(cardioid2.polar_distance(PI / 6), 102.6313972 / 2, EPSILON));
+	assert(compare(cardioid2.polar_distance(PI / 2), 27.5, EPSILON));
 
 	heart::Cardioid arr[3];
 	arr[1].set_r(3);
 	arr[2].set_r(0.0001);
-	assert(compare(arr[0].polar_distance(PI / 3), 3, 	EPSILON));
-	assert(compare(arr[1].polar_distance(PI / 3), 9, 	EPSILON));
-	assert(compare(arr[2].polar_distance(PI / 3), 0.0003, EPSILON));
+	assert(compare(arr[0].polar_distance(PI / 3), 1.5, 	EPSILON));
+	assert(compare(arr[1].polar_distance(PI / 3), 4.5, 	EPSILON));
+	assert(compare(arr[2].polar_distance(PI / 3), 0.00015, EPSILON));
 }
 
 void test_most_distant_points()
@@ -162,17 +162,17 @@ void test_area()
 	assert(compare(arr[2].area(), 1451533.6156, EPSILON_BIG));
 }
 
-void test_polar_arc_lenght()
+void test_arc_lenght()
 {
-	double res;
-
 	heart::Cardioid cardioid(0.0099);
-	res = cardioid.arc_lenght(PI / 4);
-	
-	res = cardioid.arc_lenght((5 * PI) / 6);
-	
-	res = cardioid.arc_lenght(PI / 2);
-
+	assert(compare(cardioid.arc_lenght(PI / 4), 0.0151542639, EPSILON));
+	assert(compare(cardioid.arc_lenght((5*PI) / 3), 0.0198, EPSILON));
+	cardioid.set_r(200);
+	assert(compare(cardioid.arc_lenght(PI / 8), 156.072257613, EPSILON));
+	assert(compare(cardioid.arc_lenght((4 * PI) / 3), 692.820323, EPSILON_BIG));
+	cardioid.set_r(1000);
+	assert(compare(cardioid.arc_lenght(PI / 6), 1035.27618, EPSILON_BIG));
+	assert(compare(cardioid.arc_lenght((15 * PI) / 4), 1530.733729, EPSILON_BIG));
 }
 
 int call_tests()
@@ -183,7 +183,7 @@ int call_tests()
 	test_most_distant_points();
 	test_radii_of_curvature();
 	test_area();
-	test_polar_arc_lenght();
+	test_arc_lenght();
 	std::cout << "\nNo errors found...\n" << std::endl;
 	return 0;
 }

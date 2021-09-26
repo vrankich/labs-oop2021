@@ -14,7 +14,7 @@ namespace MathEquation
 			}
 			this->m_r = r;
 		}
-
+	
 	/* return points, farthest from the cardioid axis */
 	void Cardioid::most_distant_points(Point &p1, Point &p2) const noexcept
 	{
