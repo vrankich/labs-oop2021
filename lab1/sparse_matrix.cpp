@@ -1,4 +1,4 @@
-#include "prog1.h"
+#include "sparse_matrix.h"
 
 namespace SparseMatrix
 {
@@ -213,7 +213,7 @@ namespace SparseMatrix
 	}
 
 	/* Changes old row to new sorted row */
-	void make_row_from_vector(Row *&row, double *&arr, int n)
+	void make_row_from_vector(Row *&row, double *&arr, int n, int n_nonzero)
 	{
 		if (!row || !row->first) {
 			return;
@@ -225,6 +225,9 @@ namespace SparseMatrix
 				ptr->data = arr[i];
 				ptr->col = i;
 				ptr = ptr->next;
+			} else {
+				/* jump to the nonzero elements */
+				i += n - n_nonzero - 1;
 			}
 		}
 	}
@@ -272,10 +275,10 @@ namespace SparseMatrix
 	
 		if (row->first->col <= 0) {
 			sort(temp_arr, 0, n - 1, &is_less);
-			make_row_from_vector(row, temp_arr, row->not_zero);
+			make_row_from_vector(row, temp_arr, n, row->not_zero);
 		} else {
 			sort(temp_arr, 0, n - 1, &is_greater);
-			make_row_from_vector(row, temp_arr, row->not_zero);
+			make_row_from_vector(row, temp_arr, n,  row->not_zero);
 		}
 
 		delete [] temp_arr;

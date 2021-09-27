@@ -1,4 +1,4 @@
-#include "prog1.h" 
+#include "sparse_matrix.h" 
 
 int main()
 {
