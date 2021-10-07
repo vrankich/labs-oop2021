@@ -3,6 +3,7 @@
 #include <iostream> 
 #include <exception>
 #include <cstring> 
+#include <limits> 
 
 enum search {
 	FAIL = 0,
@@ -41,7 +42,7 @@ struct Item {
 	char info[N_CHAR];
 	Item() 
 		: busy(0) {}
-	Item(const int _key, char _info[N_CHAR]);
+	Item(const int _key, const char *_info);
 };
 
 class Table {
@@ -53,16 +54,16 @@ private:
 public:
 	Table()
 		: m_n(0) {}
-	Table(const std::pair<int, char[N_CHAR]> *, const int);
+	Table(const std::pair<int, const char*> *, int);
 	int get_size() const noexcept { return Table::m_size; }
 	int get_info_len() const noexcept { return Table::m_info_len; }
 	int get_n() const noexcept { return this->m_n; }
-	void get_table(Item *, int);
-	void add(Item);
+	const Item *get_table() const noexcept { return m_table; }
+	void add(const std::pair<int, const char*> &);
 	void refresh() noexcept;
-	input input_item(std::ostream &, std::istream &, FILE *);
+	input input_item(std::ostream &, std::istream &);
 	std::ostream &output_table(std::ostream &) const noexcept;
-	search search_item(Item &, const int) noexcept;
-	search search_info(char *, const int, const int);
-	search delete_item(const int) noexcept;
+	search search_item(Item &, int) noexcept;
+	search search_info(char *, int, int);
+	search delete_item(int) noexcept;
 };

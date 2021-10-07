@@ -20,55 +20,59 @@ const char *invalid_len::what() const throw()
 	return "Invalid information lenght";
 }
 
-Item::Item(const int _key, char _info[N_CHAR])
+Item::Item(int _key, const char *_info)
 	: busy(1)
 	, key(_key)
 {
-	memcpy(info, _info, N_CHAR);
+	int len = strlen(_info);
+	if (len < N_CHAR - 1) {
+		throw invalid_len();
+	}
+	memcpy(info, _info, len);
 }
 
-Table::Table(const std::pair<int, char[N_CHAR]> *arr_key_info, const int n_pairs)
+Table::Table(const std::pair<int, const char*> *arr_key_info, int n_pairs)
 {
 	if (n_pairs > Table::m_size) {
 		throw invalid_table_size();
 	}
 
-	this->m_n = n_pairs;
+	int len;
+	m_n = n_pairs;
 	for (int i = 0; i < n_pairs; i++) {
+		len = strlen(arr_key_info[i].second);
+		if (len < m_info_len) {
+			throw invalid_len();
+		}
 		this->m_table[i].busy = 1;
 		this->m_table[i].key = arr_key_info[i].first;
-		memcpy(this->m_table[i].info, arr_key_info[i].second, N_CHAR);
+		memcpy(this->m_table[i].info, arr_key_info[i].second, len);
 	}
 }
 
-void Table::get_table(Item *table, int size)
+void Table::add(const std::pair<int, const char*> &key_info)
 {
-	if (size < Table::m_size) {
-		throw invalid_table_size();
+	int len = strlen(key_info.second);
+	if (len > m_info_len) {
+		throw invalid_len();
 	}
-
-	for (int i = 0; i < Table::m_size; i++) {
-		table[i] = this->m_table[i];
-	}
-}
-
-void Table::add(Item new_item)
-{
-	if (this->m_n == Table::m_size) {
-		this->refresh();
+	if (m_n == m_size) {
+		refresh();
 	}
 	/* if  there is no free space in the table after refreshing - throw exception */
-	if (this->m_n == Table::m_size) {
+	if (m_n == m_size) {
 		throw table_overflow();
 	}
-	for (int i = 0; i < this->m_n; i++) {
-		if (this->m_table[i].busy && this->m_table[i].key == new_item.key) {
+	for (int i = 0; i < m_n; i++) {
+		if (m_table[i].busy && m_table[i].key == key_info.first) {
 			throw equal_key();
 		}
 	}
 	/* add item to n-th place */
-	this->m_table[this->m_n].busy = 1;
-	this->m_table[this->m_n++] = new_item;
+	m_table[m_n].busy = 1;
+	m_table[m_n].key = key_info.first;
+	memcpy(m_table[m_n].info, key_info.second, len + 1);
+	m_n++;
 }
 
 /* reorganize table */
@@ -76,38 +80,73 @@ void Table::refresh() noexcept
 {
 	if (this->m_n == 0) { return; }
 
-	for (int i = 0; i < this->m_n; i++) {
-		if (this->m_table[i].busy == 0) {
-			/* empty place found */
-			for (int j = i; j < this->m_n - 1; j++) {
-				this->m_table[j] = this->m_table[j + 1];
-			}
-			this->m_table[--this->m_n].busy = 0;
+	int n = m_n;
+
+	// TODO: CHANGE
+	for (int i = 0, j = 0; i < n; i++) {
+		if (m_table[i].busy) {
+			m_table[j++] = m_table[i];
+		} else {
+			m_n--;
 		}
 	}
+
+
+
+	// OPTIMIZE !!! i and j
+//	for (int i = 0; i < this->m_n; i++) {
+//		if (this->m_table[i].busy == 0) {
+//			/* empty place found */
+//			for (int j = i; j < this->m_n - 1; j++) {
+//				this->m_table[j] = this->m_table[j + 1];
+//			}
+//			this->m_table[--this->m_n].busy = 0;
+//		}
+//	}
 }
 
-input Table::input_item(std::ostream &output, std::istream &input, FILE *f_input)
+//template <typename T>
+//input input_value(std::istream &input, void (*f)(std::istream, T&), T &res)
+//{
+//	f(input, res);
+//	if (input.bad()) { return CRASH; }
+//	if (input.eof()) { return END_OF_FILE; }
+//	if (input.fail()) { return INVALID; }
+//	//input.ignore(32767, '\n');
+//	//std::cin.clear(); 
+//	//
+//}
+
+// MEMORY LEAK
+input Table::input_item(std::ostream &output, std::istream &input)
 {
-	Item new_item;
-	new_item.busy = 1;
+	std::pair<int, char[N_CHAR]> key_info;
 	output << "Enter key: ";
-	input >>  new_item.key;
+	input >>  key_info.first;
 	if (input.bad()) { return CRASH; }
 	if (input.eof()) { return END_OF_FILE; }
-	if (input.fail()) { return INVALID; }
-	input.ignore(32767, '\n');
-	output << "Enter information: ";
+	if (input.fail()) { 
+		input.clear();
+		input.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+		return INVALID; 
+	}
+	input.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
 	/* input info */
-	char buf[Table::m_info_len + 1];
-	fgets(buf, Table::m_info_len, f_input);
-	/* if EOF or reached buffer length is smaller that info length - return */
-	if (feof(f_input)) { return END_OF_FILE; }
-	input.ignore(32767, '\n');
-	memcpy(new_item.info, buf, Table::m_info_len);
+	//key_info.second = new char[N_CHAR];
+	output << "Enter information: ";
+	input.get(key_info.second, N_CHAR - 1, '\n');
+	if (input.bad()) { return CRASH; }
+	if (input.eof()) { return END_OF_FILE; }
+	if (input.fail()) { 
+		input.clear();
+		input.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+		return INVALID; 
+	}
+	input.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-	this->add(new_item);
+	add(key_info);
+	//delete [] key_info.second;
 	return GOOD;
 }
 
@@ -128,14 +167,14 @@ std::ostream &Table::output_table(std::ostream &stream) const noexcept
 	return stream;
 }
 
-search Table::search_item(Item &_item, const int _key) noexcept
+search Table::search_item(Item &_item, int _key) noexcept
 {
 	/* empty table */
-	if (this->m_n == 0) { return FAIL; }
+	if (m_n == 0) { return FAIL; }
 
 	for (int i = 0; i < this->m_n; i++) {
-		if (this->m_table[i].busy == 1 && this->m_table[i].key == _key ) {
-			_item = this->m_table[i];
+		if (m_table[i].busy == 1 && m_table[i].key == _key ) {
+			_item = m_table[i];
 			return SUCCESS;
 		}
 	}
@@ -143,7 +182,7 @@ search Table::search_item(Item &_item, const int _key) noexcept
 	return FAIL;
 }
 
-search Table::search_info(char *res, const int _key, const int len)
+search Table::search_info(char *res, int _key, int len)
 {
 	if (len < Table::m_info_len) {
 		throw invalid_len();
@@ -161,7 +200,7 @@ search Table::search_info(char *res, const int _key, const int len)
 	return FAIL;
 }
 
-search Table::delete_item(const int _key) noexcept
+search Table::delete_item(int _key) noexcept
 {
 	/* empty table */
 	if (this->m_n == 0) { return FAIL; }

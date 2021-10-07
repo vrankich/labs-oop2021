@@ -242,7 +242,3 @@ TEST(Methods, DeleteItemRefresh)
     ASSERT_EQ(table[3].busy, 0);
 }
 
-
-
-
-

@@ -56,7 +56,16 @@ void menu()
 				break;
 			case 1:
 				try {
-					table.input_item(std::cout, std::cin, stdin);
+					input input_res = table.input_item(std::cout, std::cin);
+					if (input_res == END_OF_FILE || input_res == CRASH) {
+						std::cout << "\nEnd of file or input crash...\n";
+						c = 0;
+						break;
+					}
+					if (input_res == INVALID) {
+						std::cout << "\nIvalid input. Try again...\n";
+						break;
+					}
 				} catch(std::exception &e) {
 					std::cout << std::endl << e.what() << std::endl;
 				}
