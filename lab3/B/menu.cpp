@@ -28,11 +28,12 @@ int dialog(const char *funcs[], int n)
 	return choice;
 }
 
-input get_key(int &new_key)
+template <typename T>
+input input_type(const char *msg, T &res)
 {
 	do {
-		std::cout << "\nKey: ";
-		std::cin >> new_key;
+		std::cout << msg << std::endl;
+		std::cin >> res;
 		if (std::cin.bad()) { return CRASH; }
 		if (std::cin.eof()) { return END_OF_FILE; }
 		if (std::cin.fail()) { 
@@ -40,10 +41,13 @@ input get_key(int &new_key)
 			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 			continue; 
 		}
-		std::cin.ignore(32767, '\n');
+		std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 	} while (false);
 	return GOOD;
 }
+
+template <typename T> input input_type(const char *, int &);
+template <typename T> input input_type(const char *, Item &);
 
 void menu()
 {
@@ -56,7 +60,9 @@ void menu()
 				break;
 			case 1:
 				try {
-					input input_res = table.input_item(std::cout, std::cin);
+					Item item;
+					std::cout << std::endl;
+					input input_res = input_type("Input key and information:", item);
 					if (input_res == END_OF_FILE || input_res == CRASH) {
 						std::cout << "\nEnd of file or input crash...\n";
 						c = 0;
@@ -66,6 +72,7 @@ void menu()
 						std::cout << "\nIvalid input. Try again...\n";
 						break;
 					}
+					table += item;
 				} catch(std::exception &e) {
 					std::cout << std::endl << e.what() << std::endl;
 				}
@@ -73,7 +80,7 @@ void menu()
 			case 2:
 			{
 				Item item;
-				if (get_key(key) != GOOD) {
+				if (input_type("Enter key: ", key) != GOOD) {
 					std::cout << "\nEnd of file or input crash...\n";
 					c = 0;
 					break;
@@ -88,7 +95,7 @@ void menu()
 			case 3:
 			try {
 				char info[N_CHAR];
-				if (get_key(key) != GOOD) {
+				if (input_type("Enter key: ", key) != GOOD) {
 					std::cout << "\nEnd of file or input crash...\n";
 					c = 0;
 					break;
@@ -103,7 +110,7 @@ void menu()
 				std::cout << e.what() << std::endl;
 			}
 			case 4:
-				if (get_key(key) != GOOD) {
+				if (input_type("Enter key: ", key) != GOOD) {
 					std::cout << "\nEnd of file or input crash...\n";
 					c = 0;
 					break;
@@ -113,10 +120,11 @@ void menu()
 				}
 				break;
 			case 5:
-				table.output_table(std::cout);
+				std::cout << std::endl << "- TABLE -" << std::endl;
+				std::cout << table << std::endl;
 				break;
 			case 6:
-				table.refresh();
+				--table; /* refresh */
 				break;
 		}
 	} while (c != 0);

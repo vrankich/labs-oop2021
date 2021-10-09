@@ -108,15 +108,16 @@ void Table::refresh() noexcept
 	if (this->m_n == 0) { return; }
 
 	int n = m_n;
-
-	// TODO: CHANGE
 	for (int i = 0, j = 0; i < n; i++) {
 		if (m_table[i].busy) {
 			m_table[j++] = m_table[i];
 		} else {
-			m_table[m_n].busy = 0;
 			m_n--;
 		}
+	}
+	/* set to zero elements after m_n */
+	for (int i = m_n; i < n; i++) {
+		m_table[i].busy = 0;
 	}
 }
 
@@ -277,7 +278,7 @@ std::ostream& operator << (std::ostream &output, const Table &table) noexcept
 
 std::istream& operator >> (std::istream &input, Table &table) noexcept
 {
-	for (int i = 0; i < N_ITEMS; i++) {
+	for (int i = 0; i < table.m_n; i++) {
 		input >> table.m_table[i];
 	}
 	return input;
@@ -294,7 +295,9 @@ std::ostream& operator << (std::ostream &output, const Item &item) noexcept
 
 std::istream& operator >> (std::istream &input, Item &item) noexcept
 {
+	item.busy = 1;
 	input >> item.key;
+	input.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 	input.get(item.info, N_CHAR - 1, '\n');
 	return input;
 }
@@ -311,32 +314,3 @@ bool operator != (const Item &item1, const Item &item2) noexcept
 {
 	return !(item1 == item2);
 }
-
-//input Table::input_item(std::ostream &output, std::istream &input)
-//{
-//	std::pair<int, char[N_CHAR]> key_info;
-//	output << "Enter key: ";
-//	input >>  key_info.first;
-//	if (input.bad()) { return CRASH; }
-//	if (input.eof()) { return END_OF_FILE; }
-//	if (input.fail()) { 
-//		input.clear();
-//		input.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-//		return INVALID; 
-//	}
-//	input.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-//
-//	output << "Enter information: ";
-//	input.get(key_info.second, N_CHAR - 1, '\n');
-//	if (input.bad()) { return CRASH; }
-//	if (input.eof()) { return END_OF_FILE; }
-//	if (input.fail()) { 
-//		input.clear();
-//		input.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-//		return INVALID; 
-//	}
-//	input.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-//
-//	add(key_info);
-//	return GOOD;
-//}
