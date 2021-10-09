@@ -29,6 +29,9 @@ TEST(ItemConstructor, InitConstructor)
     for (int i = 0; i < N_CHAR - 1; i++) {
         EXPECT_EQ(i2.info[i], info2[i]);
     }
+
+	char info3[N_CHAR + 1] = "abcdef";
+	ASSERT_THROW(Item i3(2, info3), invalid_len);
 }
 
 TEST(TableConstructor, DefaultConstructor)
@@ -37,21 +40,17 @@ TEST(TableConstructor, DefaultConstructor)
     ASSERT_EQ(t.get_size(), N_ITEMS);
     ASSERT_EQ(t.get_info_len(), N_CHAR - 1);
     ASSERT_EQ(t.get_n(), 0);
-    Item items[N_ITEMS];
-    t.get_table(items, N_ITEMS);
+    const Item *items = t.get_table();
     for(int i = 0; i < N_ITEMS; i++) {
         ASSERT_EQ(0, items[i].busy);
     }
-
-	ASSERT_ANY_THROW(t.get_table(items, -1));
-	ASSERT_ANY_THROW(t.get_table(items, N_ITEMS - 1));
 
     Table arr[2];
 
     ASSERT_EQ(arr[0].get_size(), N_ITEMS);
     ASSERT_EQ(arr[0].get_info_len(), N_CHAR - 1);
     ASSERT_EQ(arr[0].get_n(), 0);
-    arr[0].get_table(items, N_ITEMS);
+    items = arr[0].get_table();
     for(int i = 0; i < N_ITEMS; i++) {
         ASSERT_EQ(0, items[i].busy);
     }
@@ -59,7 +58,7 @@ TEST(TableConstructor, DefaultConstructor)
     ASSERT_EQ(arr[1].get_size(), N_ITEMS);
     ASSERT_EQ(arr[1].get_info_len(), N_CHAR - 1);
     ASSERT_EQ(arr[1].get_n(), 0);
-    arr[1].get_table(items, N_ITEMS);
+    items = arr[1].get_table();
     for(int i = 0; i < N_ITEMS; i++) {
         ASSERT_EQ(0, items[i].busy);
     }
@@ -67,13 +66,14 @@ TEST(TableConstructor, DefaultConstructor)
 
 TEST(TableConstructor, InitConstructor)
 {
-    std::pair<int, char[N_CHAR]> arr_info_key[2];
-    char info1[N_CHAR], info2[N_CHAR];
-    arr_info_key[0].first = 27;
-    memcpy(info1, "abcde", N_CHAR);
+    const char info1[N_CHAR] = "abcde"; 
+	const char info2[N_CHAR] = "vrvrv";
+	std::pair<int, char*> arr_info_key[2];
+	arr_info_key[0].first = 27;
+	arr_info_key[0].second = new char[N_CHAR];
     memcpy(arr_info_key[0].second, info1, N_CHAR);
     arr_info_key[1].first = 5;
-    memcpy(info2, "vrvrv", N_CHAR);
+	arr_info_key[1].second = new char[N_CHAR];
     memcpy(arr_info_key[1].second, info2, N_CHAR);
 
     Table t(arr_info_key, 2);
@@ -81,8 +81,7 @@ TEST(TableConstructor, InitConstructor)
     ASSERT_EQ(t.get_size(), N_ITEMS);
     ASSERT_EQ(t.get_info_len(), N_CHAR - 1);
     ASSERT_EQ(t.get_n(), 2);
-    Item items[N_ITEMS];
-    t.get_table(items, N_ITEMS);
+    const Item *items = t.get_table();
     ASSERT_EQ(1, items[0].busy);
     ASSERT_EQ(27, items[0].key);
     for (int i = 0; i < N_CHAR - 1; i++) {
@@ -94,94 +93,88 @@ TEST(TableConstructor, InitConstructor)
         EXPECT_EQ(items[1].info[i], info2[i]);
     }
 
-    ASSERT_ANY_THROW(Table(arr_info_key, 20));
+	delete [] arr_info_key[0].second;
+	delete [] arr_info_key[1].second;
+
+    ASSERT_THROW(Table(arr_info_key, N_ITEMS + 1), invalid_table_size);
 }
 
 TEST(Methods, Add)
 {
     Table t;
-    Item table[N_ITEMS];
-    char info[N_CHAR];
+    const Item *table;
+    char info[N_CHAR] = "aaaaa";
 
-    memcpy(info, "aaaaa", N_CHAR);
-    Item i1(-10, info);
-    t.add(i1);
-    t.get_table(table, N_ITEMS);
+	std::pair<int, char*> key_info1 = std::make_pair(-10, info);
+    t.add(key_info1);
+    table = t.get_table();
     ASSERT_EQ(table[0].key, -10);
 
-    memcpy(info, "aaabb", N_CHAR);
-    Item i2(0, info);
-    t.add(i2);
-    t.get_table(table, N_ITEMS);
+	std::pair<int, char*> key_info2 = std::make_pair(0, info);
+    t.add(key_info2);
+    table = t.get_table();
     ASSERT_EQ(table[1].key, 0);
-
-    memcpy(info, "ababb", N_CHAR);
-    Item i3(3, info);
-    t.add(i3);
-    t.get_table(table, N_ITEMS);
+   
+	std::pair<int, char*> key_info3 = std::make_pair(3, info);
+    t.add(key_info3);
+    table = t.get_table();
     ASSERT_EQ(table[2].key, 3);
 
-    memcpy(info, "vvvvv", N_CHAR);
-    Item i4(-19, info);
-    t.add(i4);
-    t.get_table(table, N_ITEMS);
+	std::pair<int, char*> key_info4 = std::make_pair(-19, info);
+    t.add(key_info4);
+    table = t.get_table();
     ASSERT_EQ(table[3].key, -19);
 
-    memcpy(info, "bbbvv", N_CHAR);
-    Item i5(3, info);
-    ASSERT_ANY_THROW(t.add(i5));
+	std::pair<int, char*> key_info5 = std::make_pair(-19, info);
+    ASSERT_THROW(t.add(key_info5), equal_key);
 
-    memcpy(info, "abbvv", N_CHAR);
-    Item i6(100, info);
-    t.add(i6);
-    t.get_table(table, N_ITEMS);
+	std::pair<int, char*> key_info6 = std::make_pair(100, info);
+    t.add(key_info6);
+    table = t.get_table();
     ASSERT_EQ(table[4].key, 100);
 
-    memcpy(info, "abbvv", N_CHAR);
-    Item i7(11, info);
-    ASSERT_ANY_THROW(t.add(i7));
+	std::pair<int, char*> key_info7 = std::make_pair(11, info);
+    ASSERT_THROW(t.add(key_info7), table_overflow);
 }
 
 TEST(Methods, SearchItem)
 {
     Table t;
-    char info[N_CHAR];
+    char info[N_CHAR] = "aaaaa";
 
-    memcpy(info, "aaaaa", N_CHAR);
-    Item i1(-10, info);
-    t.add(i1);
-    memcpy(info, "aaabb", N_CHAR);
-    Item i2(0, info);
-    t.add(i2);
-    memcpy(info, "ababb", N_CHAR);
-    Item i3(3, info);
-    t.add(i3);
+	const std::pair<int, char*> key_info1 = std::make_pair(-10, info);
+    t.add(key_info1);
+	const std::pair<int, char*> key_info2 = std::make_pair(0, info);
+    t.add(key_info2);
+	const std::pair<int, char*> key_info3 = std::make_pair(3, info);
+    t.add(key_info3);
 
-    ASSERT_EQ(t.search_item(i1, -10), SUCCESS);
-    ASSERT_EQ(t.search_item(i1, 0), SUCCESS);
-    ASSERT_EQ(t.search_item(i1, 3), SUCCESS);
+	Item i;
+    ASSERT_EQ(t.search_item(i, -10), SUCCESS);
+    ASSERT_EQ(t.search_item(i, 0), SUCCESS);
+    ASSERT_EQ(t.search_item(i, 3), SUCCESS);
 
-    ASSERT_EQ(t.search_item(i1, 1), FAIL);
-    ASSERT_EQ(t.search_item(i1, 2), FAIL);
-    ASSERT_EQ(t.search_item(i1, -1), FAIL);
+    ASSERT_EQ(t.search_item(i, 1), FAIL);
+    ASSERT_EQ(t.search_item(i, 2), FAIL);
+    ASSERT_EQ(t.search_item(i, -1), FAIL);
 }
 
 TEST(Methods, SearchInfo)
 {
     Table t;
-    Item table[N_ITEMS];
+	const Item *table;
     char info[N_CHAR];
-
-    memcpy(info, "aaaaa", N_CHAR);
-    Item i1(-10, info);
-    t.add(i1);
+    
+	memcpy(info, "aaaaa", N_CHAR);
+	std::pair<int, char*> key_info1 = std::make_pair(-10, info);
+    t.add(key_info1);
     memcpy(info, "aaabb", N_CHAR);
-    Item i2(0, info);
-    t.add(i2);
+	std::pair<int, char*> key_info2 = std::make_pair(0, info);
+    t.add(key_info2);
     memcpy(info, "ababb", N_CHAR);
-    Item i3(3, info);
-    t.add(i3);
-    t.get_table(table, N_ITEMS);
+	std::pair<int, char*> key_info3 = std::make_pair(3, info);
+    t.add(key_info3);
+	table = t.get_table();
 
     ASSERT_EQ(t.search_info(info, -10, N_CHAR), SUCCESS);
     for (int i = 0; i < N_CHAR; i++) {
@@ -206,39 +199,46 @@ TEST(Methods, SearchInfo)
 TEST(Methods, DeleteItemRefresh)
 {
     Table t;
-    Item table[N_ITEMS];
-    char info[N_CHAR];
+    const Item *table;
+    char info[N_CHAR] = "aaaaa";
 
-    memcpy(info, "aaaaa", N_CHAR);
-    Item i1(-10, info);
-    t.add(i1);
-    memcpy(info, "aaabb", N_CHAR);
-    Item i2(0, info);
-    t.add(i2);
-    memcpy(info, "ababb", N_CHAR);
-    Item i3(3, info);
-    t.add(i3);
-    memcpy(info, "vvvvv", N_CHAR);
-    Item i4(-19, info);
-    t.add(i4);
+	std::pair<int, char*> key_info1 = std::make_pair(-10, info);
+    t.add(key_info1);
+	std::pair<int, char*> key_info2 = std::make_pair(0, info);
+    t.add(key_info2);
+	std::pair<int, char*> key_info3 = std::make_pair(3, info);
+    t.add(key_info3);
+	std::pair<int, char*> key_info4 = std::make_pair(-19, info);
+    t.add(key_info4);
 
     ASSERT_EQ(t.delete_item(-10), SUCCESS);
     ASSERT_EQ(t.delete_item(3), SUCCESS);
     ASSERT_EQ(t.delete_item(27), FAIL);
 
-    t.get_table(table, N_ITEMS);
+    table = t.get_table();
     ASSERT_EQ(table[0].busy, 0);
     ASSERT_EQ(table[1].busy, 1);
     ASSERT_EQ(table[2].busy, 0);
     ASSERT_EQ(table[3].busy, 1);
+	ASSERT_EQ(t.get_n(), 4);
 
     t.refresh();
-    t.get_table(table, N_ITEMS);
+    table = t.get_table();
+	ASSERT_EQ(t.get_n(), 2);
     ASSERT_EQ(table[0].busy, 1);
     ASSERT_EQ(table[0].key, 0);
     ASSERT_EQ(table[1].busy, 1);
     ASSERT_EQ(table[1].key, -19);
     ASSERT_EQ(table[2].busy, 0);
     ASSERT_EQ(table[3].busy, 0);
+
+    ASSERT_EQ(t.delete_item(0), SUCCESS);
+    ASSERT_EQ(t.delete_item(-19), SUCCESS);
+	t.refresh();
+	table = t.get_table();
+	ASSERT_EQ(t.get_n(), 0);
+	for (int i = 0; i < N_ITEMS; i++) {
+		ASSERT_EQ(table[i].busy, 0);
+	}
 }
 
