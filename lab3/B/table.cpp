@@ -20,6 +20,11 @@ const char *invalid_len::what() const throw()
 	return "Invalid information lenght";
 }
 
+const char *invalid_index::what() const throw()
+{
+	return "Invalid index";
+}
+
 Item::Item(int _key, const char *_info)
 	: busy(1)
 	, key(_key)
@@ -28,7 +33,7 @@ Item::Item(int _key, const char *_info)
 	if (len > N_CHAR - 1) {
 		throw invalid_len();
 	}
-	memcpy(info, _info, len);
+	memcpy(info, _info, len + 1);
 }
 
 /* copying constructor */
@@ -171,8 +176,11 @@ search Table::delete_item(int _key) noexcept
 }
 
 /* not safe to change Item */
-const Item& Table::operator []  (int index) const noexcept
+const Item& Table::operator []  (int index) const
 {
+	if (index > m_size) {
+		throw invalid_index();
+	}
 	return m_table[index];
 }
 
@@ -202,7 +210,7 @@ Table operator + (const Table &table1, const Table &table2)
 	for (int i = 0; i < table1.m_n; i++) {
 		res.add(table1.m_table[i]);
 	}
-	for (int i = table1.m_n; i < table2.m_n; i++) {
+	for (int i = table1.m_n; i < table1.m_n + table2.m_n; i++) {
 		res.add(table2.m_table[i - table1.m_n]);
 	}
 	return res;
@@ -253,11 +261,11 @@ Table& operator -= (Table &table1, const Table &table2) noexcept
 {
 	if (table2.get_n() == 0) { return table1; }
 
-	for (int i = 0; i < table1.m_n; i++) {
-		for (int j = 0; j < table2.m_n; j++) {
-			if (table1.m_table[i] == table2.m_table[j]) {	
+	for (int i = 0; i < table2.m_n; i++) {
+		for (int j = 0; j < table1.m_n; j++) {
+			if (table1.m_table[j] == table2.m_table[i]) {	
 				/* remove item */
-				table1.m_table[i].busy = 0;
+				table1.m_table[j].busy = 0;
 			}
 		}
 	}
@@ -306,7 +314,7 @@ bool operator == (const Item &item1, const Item &item2) noexcept
 {
 	if (item1.busy == 0 || item2.busy == 0) { return false; }
 	if	(item1.key != item2.key) { return false; }
-	if	(!strcmp(item1.info, item2.info)) { return false; }
+	if	(strcmp(item1.info, item2.info) != 0) { return false; }
 	return true;
 }
 

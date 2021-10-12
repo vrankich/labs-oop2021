@@ -25,13 +25,13 @@ Item::Item(int _key, const char *_info)
 	, key(_key)
 {
 	int len = strlen(_info);
-	if (len < N_CHAR - 1) {
+	if (len > N_CHAR - 1) {
 		throw invalid_len();
 	}
 	memcpy(info, _info, len);
 }
 
-Table::Table(const std::pair<int, const char*> *arr_key_info, int n_pairs)
+Table::Table(const std::pair<int, char*> *arr_key_info, int n_pairs)
 {
 	if (n_pairs > Table::m_size) {
 		throw invalid_table_size();
@@ -81,8 +81,6 @@ void Table::refresh() noexcept
 	if (this->m_n == 0) { return; }
 
 	int n = m_n;
-
-	// TODO: CHANGE
 	for (int i = 0, j = 0; i < n; i++) {
 		if (m_table[i].busy) {
 			m_table[j++] = m_table[i];
@@ -90,34 +88,13 @@ void Table::refresh() noexcept
 			m_n--;
 		}
 	}
+	/* set to zero elements after m_n */
+	for (int i = m_n; i < n; i++) {
+		m_table[i].busy = 0;
+	}
 
-
-
-	// OPTIMIZE !!! i and j
-//	for (int i = 0; i < this->m_n; i++) {
-//		if (this->m_table[i].busy == 0) {
-//			/* empty place found */
-//			for (int j = i; j < this->m_n - 1; j++) {
-//				this->m_table[j] = this->m_table[j + 1];
-//			}
-//			this->m_table[--this->m_n].busy = 0;
-//		}
-//	}
 }
 
-//template <typename T>
-//input input_value(std::istream &input, void (*f)(std::istream, T&), T &res)
-//{
-//	f(input, res);
-//	if (input.bad()) { return CRASH; }
-//	if (input.eof()) { return END_OF_FILE; }
-//	if (input.fail()) { return INVALID; }
-//	//input.ignore(32767, '\n');
-//	//std::cin.clear(); 
-//	//
-//}
-
-// MEMORY LEAK
 input Table::input_item(std::ostream &output, std::istream &input)
 {
 	std::pair<int, char[N_CHAR]> key_info;
@@ -132,8 +109,6 @@ input Table::input_item(std::ostream &output, std::istream &input)
 	}
 	input.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-	/* input info */
-	//key_info.second = new char[N_CHAR];
 	output << "Enter information: ";
 	input.get(key_info.second, N_CHAR - 1, '\n');
 	if (input.bad()) { return CRASH; }
@@ -146,7 +121,6 @@ input Table::input_item(std::ostream &output, std::istream &input)
 	input.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
 	add(key_info);
-	//delete [] key_info.second;
 	return GOOD;
 }
 

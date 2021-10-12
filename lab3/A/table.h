@@ -52,9 +52,9 @@ private:
 	int m_n;
 	Item m_table[N_ITEMS];
 public:
-	Table()
+	Table() noexcept
 		: m_n(0) {}
-	Table(const std::pair<int, const char*> *, int);
+	Table(const std::pair<int, char*> *, int);
 	int get_size() const noexcept { return Table::m_size; }
 	int get_info_len() const noexcept { return Table::m_info_len; }
 	int get_n() const noexcept { return this->m_n; }

@@ -33,6 +33,10 @@ class invalid_len: public std::exception {
 	virtual const char *what() const throw();
 };
 
+class invalid_index: public std::exception {
+	virtual const char *what() const throw();
+};
+
 inline const int N_ITEMS = 5;
 inline const int N_CHAR = 6;
 
@@ -63,11 +67,10 @@ public:
 	const Item *get_table() const noexcept { return m_table; }
 	void add(const std::pair<int, const char*> &);
 	void refresh() noexcept;
-	//input input_item(std::ostream &, std::istream &);
 	search search_item(Item &, int) noexcept;
 	search search_info(char *, int, int);
 	search delete_item(int) noexcept;
-	const Item& operator []  (int) const noexcept;
+	const Item& operator []  (int) const;
 	Table& operator --() noexcept;
 	const Table operator --(int) noexcept;
 	friend Table operator + (const Table &, const Table &);
