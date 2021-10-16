@@ -72,14 +72,14 @@ public:
 	search delete_item(int) noexcept;
 	const Item& operator []  (int) const;
 	Table& operator --() noexcept;
-	const Table operator --(int) noexcept;
+	Table operator --(int) noexcept;
+	Table& operator += (const Table &);
+	Table& operator -= (const Table &) noexcept;
 	friend Table operator + (const Table &, const Table &);
-	friend Table& operator += (Table &, const Table &);
 	friend Table& operator += (Table &, const Item &);
 	friend Table operator - (const Table &, const Table &) noexcept;
-	friend Table& operator -= (Table &, const Table &) noexcept;
 	friend std::ostream& operator << (std::ostream &, const Table &) noexcept;
-	friend std::istream& operator >> (std::istream &, Table &) noexcept;
+	friend std::istream& operator >> (std::istream &, Table &);
 };
 
 std::ostream& operator << (std::ostream &, const Item &) noexcept;

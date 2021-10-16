@@ -31,18 +31,16 @@ int dialog(const char *funcs[], int n)
 template <typename T>
 input input_type(const char *msg, T &res)
 {
-	do {
-		std::cout << msg << std::endl;
-		std::cin >> res;
-		if (std::cin.bad()) { return CRASH; }
-		if (std::cin.eof()) { return END_OF_FILE; }
-		if (std::cin.fail()) { 
-			std::cin.clear(); 
-			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-			continue; 
-		}
+	std::cout << msg << std::endl;
+	std::cin >> res;
+	if (std::cin.bad()) { return CRASH; }
+	if (std::cin.eof()) { return END_OF_FILE; }
+	if (std::cin.fail()) { 
+		std::cin.clear(); 
 		std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-	} while (false);
+		return INVALID;
+	}
+	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 	return GOOD;
 }
 
@@ -59,23 +57,28 @@ void menu()
 			case 0:
 				break;
 			case 1:
+			{
+				std::pair<int, char*> item;
+				input input_res = input_type("Input key and information:", item);
+				if (input_res == END_OF_FILE || input_res == CRASH) {
+					std::cout << "\nEnd of file or input crash...\n";
+					delete [] item.second;
+					c = 0;
+					break;
+				}
+				if (input_res == INVALID) {
+					std::cout << "\nIvalid input. Try again...\n";
+					delete [] item.second;
+					break;
+				}
 				try {
-					Item item;
-					input input_res = input_type("Input key and information:", item);
-					if (input_res == END_OF_FILE || input_res == CRASH) {
-						std::cout << "\nEnd of file or input crash...\n";
-						c = 0;
-						break;
-					}
-					if (input_res == INVALID) {
-						std::cout << "\nIvalid input. Try again...\n";
-						break;
-					}
-					table += item;
+					table.add(item);
 				} catch(std::exception &e) {
 					std::cout << std::endl << e.what() << std::endl;
 				}
+				delete [] item.second;
 				break;
+			}
 			case 2:
 			{
 				Item item;
@@ -123,7 +126,7 @@ void menu()
 				std::cout << table << std::endl;
 				break;
 			case 6:
-				--table; /* refresh */
+				table.refresh();
 				break;
 		}
 	} while (c != 0);

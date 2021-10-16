@@ -481,4 +481,3 @@ TEST(Operator, Comparation)
     ASSERT_FALSE(i1 == i2);
 }
 
-

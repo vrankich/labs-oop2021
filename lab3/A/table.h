@@ -5,16 +5,13 @@
 #include <cstring> 
 #include <limits> 
 
-enum search {
-	FAIL = 0,
-	SUCCESS = 1,
-};
+enum search { FAIL, SUCCESS };
 
 enum input {
-	CRASH = 0,
-	END_OF_FILE = 1,
-	INVALID = 2,
-	GOOD = 3,
+	CRASH,
+	END_OF_FILE,
+	INVALID,
+	GOOD,
 };
 
 class invalid_table_size: public std::exception {

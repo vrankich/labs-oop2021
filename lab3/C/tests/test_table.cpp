@@ -1,3 +1,4 @@
+#include <fstream> 
 #include "gtest/gtest.h"
 #include "../table.h"
 
@@ -246,12 +247,12 @@ TEST(Operator, Indexation)
 {
     Table t;
     char info[6] = "aaaaa";
-    Item item(3, info);
-    t += item;
-    item.key = 0;
-    t += item;
-    item.key = 10;
-    t += item;
+    const std::pair<int, char*> key_info1 = std::make_pair(3, info);
+    t.add(key_info1);
+    const std::pair<int, char*> key_info2 = std::make_pair(0, info);
+    t.add(key_info2);
+    const std::pair<int, char*> key_info3 = std::make_pair(10, info);
+    t.add(key_info3);
 
     ASSERT_EQ(t[0].key, 3);
     ASSERT_EQ(t[1].key, 0);
@@ -260,54 +261,54 @@ TEST(Operator, Indexation)
     ASSERT_THROW(t[t.get_size() + 1], invalid_index);
 }
 
-TEST(Operator, PlusEqual)
-{
-    Table t;
-    char info[6] = "aaaaa";
-    Item item(3, info);
-    t += item;
-    item.key = 0;
-    t += item;
-    item.key = 10;
-    t += item;
-
-    ASSERT_EQ(t.get_n(), 3);
-    for (int i = 0; i < 3; i++) {
-        ASSERT_EQ(t[i].busy, 1);
-    }
-    ASSERT_EQ(t[0].key, 3);
-    ASSERT_EQ(t[1].key, 0);
-    ASSERT_EQ(t[2].key, 10);
-
-   for (int i = t.get_n(); i < t.get_size(); i++) {
-       ASSERT_EQ(t[i].busy, 0);
-   }
-
-    ASSERT_THROW(t += item, equal_key);
-    item.key = -1;
-    t += item;
-    item.key = -10;
-    t += item;
-
-    for (int i = 0; i < t.get_n(); i++) {
-        ASSERT_EQ(t[i].busy, 1);
-    }
-}
+//TEST(Operator, PlusEqual)
+//{
+//    Table t;
+//    char info[6] = "aaaaa";
+//    Item item(3, info);
+//    t += item;
+//    item.key = 0;
+//    t += item;
+//    item.key = 10;
+//    t += item;
+//
+//    ASSERT_EQ(t.get_n(), 3);
+//    for (int i = 0; i < 3; i++) {
+//        ASSERT_EQ(t[i].busy, 1);
+//    }
+//    ASSERT_EQ(t[0].key, 3);
+//    ASSERT_EQ(t[1].key, 0);
+//    ASSERT_EQ(t[2].key, 10);
+//
+//   for (int i = t.get_n(); i < t.get_size(); i++) {
+//       ASSERT_EQ(t[i].busy, 0);
+//   }
+//
+//    ASSERT_THROW(t += item, equal_key);
+//    item.key = -1;
+//    t += item;
+//    item.key = -10;
+//    t += item;
+//
+//    for (int i = 0; i < t.get_n(); i++) {
+//        ASSERT_EQ(t[i].busy, 1);
+//    }
+//}
 
 TEST(Operator, Addition)
 {
     Table t1, t2;
     char info[6] = "aaaaa";
-    Item item(1, info);
-    t1 += item;
-    item.key = 0;
-    t1 += item;
-    item.key = 10;
-    t1 += item;
-    item.key = 3;
-    t2 += item;
-    item.key = 11;
-    t2 += item;
+    std::pair<int, char*> key_info = std::make_pair(1, info);
+    t1.add(key_info);
+    key_info.first = 0;
+    t1.add(key_info);
+    key_info.first = 10;
+    t1.add(key_info);
+    key_info.first = 3;
+    t2.add(key_info);
+    key_info.first = 11;
+    t2.add(key_info);
 
     int sum_n = t1.get_n() + t2.get_n();
     Table t = t1 + t2;
@@ -322,51 +323,11 @@ TEST(Operator, Addition)
     ASSERT_EQ(t[3].key, 3);
     ASSERT_EQ(t[4].key, 11);
 
-    item.key = 100;
-    t1 += item;
-    item.key = 100;
-    t2 += item;
+    key_info.first = 100;
+    t1.add(key_info);
+    key_info.first = 100;
+    t2.add(key_info);
     ASSERT_THROW(t1 + t2, equal_key);
-}
-
-TEST(Operator, UnaryMinus)
-{
-    Table t;
-    char info[8] = "aaaaaaa";
-    Item item(3, info);
-    t += item;
-    item.key = 0;
-    t += item;
-    item.key = 10;
-    t += item;
-    item.key = 9;
-    t += item;
-    item.key = -10;
-    t += item;
-
-    t.delete_item(10);
-    ASSERT_EQ(t[2].busy, 0);
-    Table t1 = --t;
-    ASSERT_EQ(t1[2].busy, 1);
-    ASSERT_EQ(t1[2].key, 9);
-    ASSERT_EQ(t[2].busy, 1);
-    ASSERT_EQ(t[2].key, 9);
-
-    t.delete_item(9);
-    t1 = t--;
-    ASSERT_EQ(t.get_n(), t1.get_n() - 1);
-    ASSERT_EQ(t1[2].busy, 0);
-    ASSERT_EQ(t1[3].key, -10);
-    ASSERT_EQ(t[2].busy, 1);
-    ASSERT_EQ(t[2].key, -10);
-
-    t.delete_item(3);
-    t1 = t--;
-    ASSERT_EQ(t.get_n(), t1.get_n() - 1);
-    ASSERT_EQ(t1[0].busy, 0);
-    ASSERT_EQ(t1[1].key, 0);
-    ASSERT_EQ(t[0].busy, 1);
-    ASSERT_EQ(t[0].key, 0);
 }
 
 TEST(Operator, MinusEqual)
@@ -374,23 +335,23 @@ TEST(Operator, MinusEqual)
     Table t1, t2;
     const int N_CHAR = 5;
     char info[N_CHAR] = "vrvr";
-    Item item(3, info);
-    t1 += item;
-    item.key = 0;
-    t1 += item;
-    item.key = 10;
-    t1 += item;
-    item.key = 9;
-    t2 += item;
-
+    std::pair<int, char*> key_info = std::make_pair(3, info);
+    t1.add(key_info);
+    key_info.first = 0;
+    t1.add(key_info);
+    key_info.first = 10;
+    t1.add(key_info);
+    key_info.first = 9;
+    t2.add(key_info);
+    
     /* no equal items */
     t1 -= t2;
     ASSERT_EQ(t1[0].busy, 1);
     ASSERT_EQ(t1[1].busy, 1);
     ASSERT_EQ(t1[2].busy, 1);
 
-    item.key = 10;
-    t2 += item;
+    key_info.first = 10;
+    t2.add(key_info);
 
     t1 -= t2;
     ASSERT_EQ(t1[0].busy, 1);
@@ -403,17 +364,17 @@ TEST(Operator, MinusEqual)
     ASSERT_EQ(t2[0].key, 9);
     ASSERT_EQ(t2[1].key, 10);
 
-    item.key = 9;
-    t1 += item;
+    key_info.first = 9;
+    t1.add(key_info);
     ASSERT_EQ(t1[t1.get_n() - 1].busy, 1);
     ASSERT_EQ(t1[t1.get_n() - 1].key, 9);
     t1 -= t2;
     ASSERT_EQ(t1[t1.get_n() - 1].busy, 0);
 
     /* equal keys but different information */
-    item.key = 50;
-    t1 += item;
-    memcpy(item.info, info, N_CHAR);
+    key_info.first = 50;
+    t1.add(key_info);
+    memcpy(key_info.second, info, N_CHAR);
     ASSERT_EQ(t1[t1.get_n() - 1].busy, 1);
     ASSERT_EQ(t1[t1.get_n() - 1].key, 50);
     t1 -= t2;
@@ -425,15 +386,15 @@ TEST(Operator, Minus)
     Table t1, t2, t;
     const int N_CHAR = 7;
     char info[N_CHAR] = "vrvrvr";
-    Item item(3, info);
-    t1 += item;
-    item.key = 0;
-    t1 += item;
-    item.key = 10;
-    t1 += item;
-    item.key = 9;
-    t2 += item;
-
+    std::pair<int, char*> key_info = std::make_pair(3, info);
+    t1.add(key_info);
+    key_info.first = 0;
+    t1.add(key_info);
+    key_info.first = 10;
+    t1.add(key_info);
+    key_info.first = 9;
+    t2.add(key_info);
+    
     /* no equal keys
      * all items from the first table should be copied */
     t = t1 - t2;
@@ -445,14 +406,14 @@ TEST(Operator, Minus)
     ASSERT_EQ(t[1].key, 0);
     ASSERT_EQ(t[2].key, 10);
 
-    item.key = 11;
-    t1 += item;
-    t2 += item;
-    item.key = 20;
-    t1 += item;
-   memcpy(item.info, "aaaaa", N_CHAR);
-   item.key = 30;
-   t2 += item;
+    key_info.first = 11;
+    t1.add(key_info);
+    t2.add(key_info);
+    key_info.first = 20;
+    t1.add(key_info);
+   memcpy(key_info.second, "aaaaa", N_CHAR);
+    key_info.first = 30;
+    t2.add(key_info);
    t = t1 - t2;
    ASSERT_EQ(t[0].busy, 1);
    ASSERT_EQ(t[1].busy, 1);
@@ -488,4 +449,72 @@ TEST(Operator, Comparation)
     ASSERT_FALSE(i1 == i2);
 }
 
+TEST(Operator, ItemInOut)
+{
+    std::fstream file("test1.txt");
+    
+    /* write items to file */
+    char info[5] = "aaaa";
+    Item item1(30, info);
+    Item item2(-100, info);
+    file << item1;
+    file << item2;
+    
+    /* read items from file */
+    file.seekg(0, file.beg);
+    std::pair<int, char*> read_item1;
+    file >> read_item1;
+    ASSERT_EQ(item1.key, read_item1.first);
+    ASSERT_STREQ(item1.info, read_item1.second);
+    delete [] read_item1.second;
+    std::pair<int, char*> read_item2;
+    file >> read_item2;
+    ASSERT_EQ(item2.key, read_item2.first);
+    ASSERT_STREQ(item2.info, read_item2.second);
+    delete [] read_item2.second;
+    
+    file.close();
+}
 
+TEST(Operator, TableInOut)
+{
+    std::fstream file ("test2.txt");
+
+    Table t1, t2;
+    const int N_CHAR = 7;
+    char info[N_CHAR] = "vrvrvr";
+    std::pair<int, char*> key_info = std::make_pair(3, info);
+    t1.add(key_info);
+    key_info.first = 0;
+    t1.add(key_info);
+    key_info.first = 10;
+    t1.add(key_info);
+    key_info.first = 9;
+    t2.add(key_info);
+    key_info.first = -1;
+    t2.add(key_info);
+    file << t1.get_n() << std::endl;
+    file << t1;
+    file << t2.get_n() << std::endl;
+    file << t2;
+
+    file.seekg(0, file.beg);
+    Table t1_read, t2_read;
+    file >> t1_read;
+    file >> t2_read;
+    ASSERT_EQ(t1.get_size(), t1_read.get_size());
+    ASSERT_EQ(t1.get_n(), t1_read.get_n());
+//    Item item1, item2;
+//    for (int i = 0; i < t1.get_size(); i++) {
+//        item1 = t1[i];
+//        item2 = t1_read[i];
+//        ASSERT_TRUE(item1 == item2);
+//    }
+//    for (int i = 0; i < t2.get_size(); i++) {
+//        item1 = t2[i];
+//        item2 = t2_read[i];
+//        ASSERT_TRUE(item1 == item2);
+//    }
+
+    file.close();
+}

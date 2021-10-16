@@ -193,7 +193,7 @@ Table& Table::operator --() noexcept
 }
 
 /* postfix operator for refreshing*/
-const Table Table::operator --(int) noexcept
+Table Table::operator --(int) noexcept
 {
 	Table temp_table(*this);
 	this->refresh();
@@ -216,16 +216,16 @@ Table operator + (const Table &table1, const Table &table2)
 	return res;
 }
 
-Table& operator += (Table &table1, const Table &table2)
+Table& Table::operator += (const Table &table)
 {
-	if (table1.m_n + table2.m_n > N_ITEMS) {
+	if (m_n + table.m_n > N_ITEMS) {
 		throw table_overflow();
 	}
 	
-	for (int i = table1.m_n; i < table2.m_n; i++) {
-		table1.add(table2.m_table[i - table1.m_n]);
+	for (int i = m_n; i < table.m_n; i++) {
+		add(table.m_table[i - m_n]);
 	}
-	return table1;
+	return *this;
 }
 
 /* throws exception in case of table overflow */
@@ -257,19 +257,19 @@ Table operator - (const Table &table1, const Table &table2) noexcept
 	return res;
 }
 
-Table& operator -= (Table &table1, const Table &table2) noexcept
+Table& Table::operator -= (const Table &table) noexcept
 {
-	if (table2.get_n() == 0) { return table1; }
+	if (table.get_n() == 0) { return *this; }
 
-	for (int i = 0; i < table2.m_n; i++) {
-		for (int j = 0; j < table1.m_n; j++) {
-			if (table1.m_table[j] == table2.m_table[i]) {	
+	for (int i = 0; i < table.m_n; i++) {
+		for (int j = 0; j < m_n; j++) {
+			if (m_table[j] == table.m_table[i]) {	
 				/* remove item */
-				table1.m_table[j].busy = 0;
+				m_table[j].busy = 0;
 			}
 		}
 	}
-	return table1;
+	return *this;
 }
 
 std::ostream& operator << (std::ostream &output, const Table &table) noexcept
@@ -284,10 +284,16 @@ std::ostream& operator << (std::ostream &output, const Table &table) noexcept
 	return output;
 }
 
-std::istream& operator >> (std::istream &input, Table &table) noexcept
+std::istream& operator >> (std::istream &input, Table &table)
 {
-	for (int i = 0; i < table.m_n; i++) {
+	int n;
+	input >> n;
+	if (n > table.m_size) {
+		throw invalid_table_size();
+	}
+	for (int i = 0; i < n; i++) {
 		input >> table.m_table[i];
+		table.m_n++;
 	}
 	return input;
 }

@@ -5,16 +5,14 @@
 #include <cstring> 
 #include <limits> 
 
-enum search {
-	FAIL = 0,
-	SUCCESS = 1,
-};
+/* is key found in the table or not */
+enum search { FAIL, SUCCESS, };
 
 enum input {
-	CRASH = 0,
-	END_OF_FILE = 1,
-	INVALID = 2,
-	GOOD = 3,
+	CRASH, 
+	END_OF_FILE, 
+	INVALID, 
+	GOOD,
 };
 
 class equal_key: public std::exception {
@@ -36,13 +34,21 @@ struct Item {
 	Item() 
 		: busy(0) 
 		, info(nullptr) {}
+	Item(const Item&item);
+	Item(Item &&item)
+		: busy(item.busy) 
+		, info(item.info) { item.info = nullptr; } 
 	Item(const int _key, char *_info);
-	virtual ~Item();
-	Item& operator =(Item &&);
-	Item& operator =(const Item &);
+	~Item() noexcept { delete [] info; }
+	Item& operator =(Item &&) noexcept;
+	Item& operator =(const Item &) noexcept;
+	/* comparison of items */
 	bool operator ==(const Item &) noexcept;
 	bool operator !=(const Item &) noexcept;
 };
+
+std::ostream& operator <<(std::ostream &, const Item &) noexcept;
+std::istream& operator >>(std::istream &, std::pair<int, char*> &) noexcept;
 
 class Table {
 private:
@@ -50,7 +56,6 @@ private:
 	int m_n;
 	Item *m_table;
 	void add(const Item &);
-	void delete_table() noexcept;
 public:
 	Table(int size = 0)
 		: m_size(size)
@@ -60,16 +65,20 @@ public:
 			else { throw invalid_size(); }
 		}
 	Table(const Table &);
+	/* constructor from array of keys and info */
 	Table(const std::pair<int, char*> *, int);
 	Table(Table &&table)
 		: m_size(table.m_size)
 		, m_n(table.m_n)
 		, m_table(table.m_table) { table.m_table = nullptr; }
-	virtual ~Table() noexcept;
+	~Table() noexcept { delete [] m_table; }
 	int get_size() const noexcept { return Table::m_size; }
 	int get_n() const noexcept { return this->m_n; }
+	//void set_n(int n) noexcept { m_n = n; }
 	const Item *get_table() const noexcept { return m_table; }
+	/* add new item to the table */
 	void add(const std::pair<int, const char*> &);
+	/* reorganize table */
 	void refresh() noexcept;
 	const char *search_info(int) const noexcept;
 	search search_item(Item &, int) noexcept;
@@ -77,19 +86,16 @@ public:
 	const Item& operator [](int) const;
 	Table& operator =(const Table&) noexcept;
 	Table& operator =(Table&&) noexcept;
-	Table& operator --() noexcept;
-	const Table operator --(int) noexcept;
+	/* add items from the table passed to function */
+	Table& operator +=(const Table &);
+	/* delete all items from this table which are in the table passed to function*/
+	Table& operator -=(const Table &) noexcept;
+	/* new table from the items which are in the first and second table */
 	friend Table operator +(const Table &, const Table &);
-	friend Table& operator +=(Table &, const Table &);
-	friend Table& operator +=(Table &, const Item &);
+	/* delete all items from the first table which are in the second */
 	friend Table operator -(const Table &, const Table &) noexcept;
-	friend Table& operator -=(Table &, const Table &) noexcept;
 	friend std::ostream& operator <<(std::ostream &, const Table &) noexcept;
 	friend std::istream& operator >>(std::istream &, Table &) noexcept;
 };
-
-std::istream& operator >>(std::istream &, char *&);
-std::ostream& operator <<(std::ostream &, const Item &) noexcept;
-std::istream& operator >>(std::istream &, Item &) noexcept;
 
 
