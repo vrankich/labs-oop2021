@@ -1,1 +1,1 @@
-lib "Vector.h"
+library "Vector.h"
