@@ -261,40 +261,6 @@ TEST(Operator, Indexation)
     ASSERT_THROW(t[t.get_size() + 1], invalid_index);
 }
 
-//TEST(Operator, PlusEqual)
-//{
-//    Table t;
-//    char info[6] = "aaaaa";
-//    Item item(3, info);
-//    t += item;
-//    item.key = 0;
-//    t += item;
-//    item.key = 10;
-//    t += item;
-//
-//    ASSERT_EQ(t.get_n(), 3);
-//    for (int i = 0; i < 3; i++) {
-//        ASSERT_EQ(t[i].busy, 1);
-//    }
-//    ASSERT_EQ(t[0].key, 3);
-//    ASSERT_EQ(t[1].key, 0);
-//    ASSERT_EQ(t[2].key, 10);
-//
-//   for (int i = t.get_n(); i < t.get_size(); i++) {
-//       ASSERT_EQ(t[i].busy, 0);
-//   }
-//
-//    ASSERT_THROW(t += item, equal_key);
-//    item.key = -1;
-//    t += item;
-//    item.key = -10;
-//    t += item;
-//
-//    for (int i = 0; i < t.get_n(); i++) {
-//        ASSERT_EQ(t[i].busy, 1);
-//    }
-//}
-
 TEST(Operator, Addition)
 {
     Table t1, t2;
@@ -504,17 +470,17 @@ TEST(Operator, TableInOut)
     file >> t2_read;
     ASSERT_EQ(t1.get_size(), t1_read.get_size());
     ASSERT_EQ(t1.get_n(), t1_read.get_n());
-//    Item item1, item2;
-//    for (int i = 0; i < t1.get_size(); i++) {
-//        item1 = t1[i];
-//        item2 = t1_read[i];
-//        ASSERT_TRUE(item1 == item2);
-//    }
-//    for (int i = 0; i < t2.get_size(); i++) {
-//        item1 = t2[i];
-//        item2 = t2_read[i];
-//        ASSERT_TRUE(item1 == item2);
-//    }
+    Item item1, item2;
+    for (int i = 0; i < t1.get_size(); i++) {
+        item1 = t1[i];
+        item2 = t1_read[i];
+        ASSERT_TRUE(item1 == item2);
+    }
+    for (int i = 0; i < t2.get_size(); i++) {
+        item1 = t2[i];
+        item2 = t2_read[i];
+        ASSERT_TRUE(item1 == item2);
+    }
 
     file.close();
 }
