@@ -24,7 +24,8 @@ namespace PackageManager {
 
 	std::istream& Version::operator >>(std::istream &in)
 	{
-		// ??????
+		
+
 		return in;
 	}
 
@@ -283,6 +284,15 @@ namespace PackageManager {
 		return *this;
 	}
 
+	void MainPackage::install() noexcept
+	{
+		if (m_installed) {
+			update();
+			return;
+		}
+		m_installed = true;
+	}
+
 //	std::ostream& operator <<(std::ostream &out, const MainPackage &mp) noexcept
 //	{
 //
@@ -313,7 +323,6 @@ namespace PackageManager {
 		return *this;
 	}
 
-
 	AuxiliaryPackage& AuxiliaryPackage::operator =(const AuxiliaryPackage &ap)
 	{
 		if (this == &ap) { return *this; }
@@ -329,6 +338,15 @@ namespace PackageManager {
 		m_installed = ap.m_installed;
 		m_libs = std::move(ap.m_libs);
 		return *this;
+	}
+
+	void AuxiliaryPackage::install() noexcept
+	{
+		if (m_installed) {
+			update();
+			return;
+		}
+		m_installed = true;
 	}
 
 	PackagePart* AuxiliaryPackage::separate(unsigned count, pair<char*, Strings> *data) noexcept // ???
@@ -351,14 +369,12 @@ namespace PackageManager {
 
 	EmptyPackage::EmptyPackage(const EmptyPackage &ep)
 	{
-		m_installed = ep.m_installed;
 		m_package = ep.m_package;
 		m_dependencies = ep.m_dependencies;
 	}
 
 	EmptyPackage::EmptyPackage(EmptyPackage &&ep) noexcept
 	{
-		m_installed = ep.m_installed;
 		m_package = ep.m_package;
 		ep.m_package = nullptr;
 		m_dependencies = std::move(ep.m_dependencies);
@@ -368,7 +384,6 @@ namespace PackageManager {
 	{
 		if (this == &ep) { return *this; }
 
-		m_installed = ep.m_installed;
 		delete m_package;
 		m_package = ep.m_package;
 		m_dependencies = ep.m_dependencies;
@@ -377,7 +392,7 @@ namespace PackageManager {
 
 	EmptyPackage& EmptyPackage::operator =(EmptyPackage &&ep) noexcept
 	{
-		m_installed = ep.m_installed;
+		//m_installed = ep.m_installed;
 		delete m_package;
 		m_package = ep.m_package;
 		ep.m_package = nullptr;
@@ -385,6 +400,89 @@ namespace PackageManager {
 		return *this;
 	}
 
+	bool ProPro::remove_package(MainPackage *mp) noexcept
+	{
+
+		return false;
+	}
 	
+	ProPro& ProPro::add_package(MainPackage *mp)
+	{
+
+		return *this;
+	}
+
+	// unite functions
+	ProPro& ProPro::install_package_auto(const EmptyPackage &ep)
+	{
+		MainPackage *package = ep.get_package();
+		
+		if (package->is_installed()) {
+			package->update();
+			return *this;
+		}
+
+		// TODO: What to do with default version?
+		package->install();
+		List list(ep.get_dependencies().get_head());
+		ListIterator iter(list);
+		PackageLink *ptr = nullptr;
+		Link *ptr_link = nullptr;
+		while (ptr_link = iter()) {
+			ptr = static_cast<PackageLink *>(ptr);
+			ptr->get_package()->install();
+		}
+
+		return *this;
+	}
+
+	ProPro& ProPro::install_package_request(std::ostream &out, std::istream &in, const EmptyPackage &ep)
+	{
+		MainPackage *package = ep.get_package();
+		
+		if (package->is_installed()) {
+			package->update();
+			return *this;//
+		}
+
+		package->install();
+		List list(ep.get_dependencies().get_head());
+		ListIterator iter(list);
+		PackageLink *ptr = nullptr;
+		Link *ptr_link = nullptr;
+		out << "Install dependencies" << std::endl;
+		char choice;
+		while (ptr_link = iter()) { // WAAARNING
+			ptr = static_cast<PackageLink *>(ptr);
+			out << "Install " << ptr->get_package()->get_name() << "? (y/n) ";
+			in >> choice;
+			if (!in.good()) { return *this; } // TODO: add error code
+			if (choice == 'y' || choice == 'Y') {
+				ptr->get_package()->install();
+			}
+		}
+
+		return *this;
+	}
+
+	ProPro& ProPro::remove_package(const EmptyPackage &ep)
+	{
+		if (!remove_package(ep.get_package())) { return *this; }
+
+		// remove nonused packages
+		// maybe return an error code ?
+	}
+
+	ProPro& ProPro::remove_nonused_auxiliary() noexcept
+	{
+
+		return *this;
+	}
+
+	ProPro& ProPro::update(std::ostream&) noexcept
+	{
+
+		return *this;
+	}
 }
 
