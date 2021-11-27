@@ -4,6 +4,7 @@
 #include <cstring> 
 #include <limits> 
 #include <typeinfo> 
+#include "../pm_exceptions.h"
 
 namespace PackageManager 
 {
@@ -21,46 +22,88 @@ namespace PackageManager
 		Version(const Version&);
 
 		Version& set(unsigned, unsigned, unsigned);
-		std::ostream& operator <<(std::ostream&);
-		std::istream& operator >>(std::istream&);
 		Version& operator =(const Version&);
 		Version& operator ++() noexcept;
 		Version operator ++(int) noexcept;
+		friend std::ostream& operator <<(std::ostream&, const Version&);
+		friend std::istream& operator >>(std::istream&, Version&);
 	};
 
-	struct Strings {
-		char **data = nullptr;
-		unsigned count;
-		
-		Strings() : count(0) {}
-		Strings(const Strings&);
-		Strings(Strings &&s)
-			: data(s.data)
-			, count(s.count) { s.data = nullptr; s.count = 0; }
-		~Strings() { delete_data(); }
+//	struct Strings {
+//		char **data = nullptr;
+//		unsigned count;
+//		
+//		Strings() : count(0) {}
+//		Strings(const Strings&);
+//		Strings(Strings &&s)
+//			: data(s.data)
+//			, count(s.count) { s.data = nullptr; s.count = 0; }
+//		~Strings() { delete_data(); }
+//
+//		Strings& set(const char **, unsigned);
+//		std::ostream& operator <<(std::ostream&);
+//		std::istream& operator >>(std::istream&);
+//		Strings& operator =(const Strings&);
+//		Strings& operator =(Strings &&arr);
+//	private:
+//		Strings& delete_data() noexcept;
+//	};
 
-		Strings& set(const char **, unsigned);
-		// private:
-		Strings& delete_data() noexcept;
-		std::ostream& operator <<(std::ostream&);
-		std::istream& operator >>(std::istream&);
-		Strings& operator =(const Strings&);
-		Strings& operator =(Strings &&arr);
+	template <typename T>
+	class Vector {
+	private:
+		T *m_arr;
+		size_t m_size;
+	public:
+		Vector(T *arr = nullptr, size_t size = 0) noexcept
+			: m_arr(arr)
+			, m_size(size) {}
+		Vector(const Vector&);
+		Vector(Vector &&v) noexcept 
+			: m_arr(v.m_arr)
+			, m_size(v.m_size) { v.m_arr = nullptr; } 
+		~Vector() noexcept { delete [] m_arr; }
+
+		size_t size() const noexcept { return m_size; }
+
+		T& operator =(const Vector&);
+		T& operator =(Vector &&) noexcept;
+		T& operator [](size_t i) {
+			if (i > m_size) {
+				throw invalid_vector_size();
+			}
+			return m_arr[i];
+		}
 	};
 
-	template <typename T1, typename T2>
-	struct pair {
-		T1 first;
-		T2 second;
-		
-		pair() : first(T1()), second(T2()) {}
-		pair(const T1 &_first, const T2 &_second)
-			: first(_first)
-			, second(_second) {}
+	template <typename T> Vector<T>::Vector(const Vector<T> &v)
+	{
+		m_size = v.m_size;
+		m_arr = new T[m_size];
+		for (size_t i = 0; i < m_size; i++) {
+			m_arr[i] = v.m_arr[i];
+		}
+	}
 
-		pair& set(T1&, T2&);
-		pair& operator =(const pair&);
-	};
+	template <typename T> T& Vector<T>::operator =(const Vector<T> &v)
+	{
+		delete [] m_arr;
+		m_size = v.m_size;
+		m_arr = new T[m_size];
+		for (size_t i = 0; i < m_size; i++) {
+			m_arr[i] = v.m_arr[i];
+		}
+		//return *this;
+	}
+
+	template <typename T> T& Vector<T>::operator =(Vector<T> &&v) noexcept
+	{
+		delete [] m_arr;
+		m_size = v.m_size;
+		m_arr = v.m_arr;
+		v.m_arr = nullptr;
+		return *this;
+	}
 
 
 	struct Link {
@@ -80,9 +123,11 @@ namespace PackageManager
 	public:
 		List() noexcept : m_head(nullptr) {}
 		List(Link *link) noexcept : m_head(link) {}
+		List(const List &l) : m_head(l.m_head) {}
+		List(List &&l) : m_head(l.m_head) { l.m_head = nullptr; }
 		~List() { delete m_head; }
 		
-		List& operator =(const List &l) noexcept
+		List& operator =(const List &l)
 			{ m_head = l.m_head; return *this; }
 		List& operator =(List &&l) noexcept
 			{ m_head = l.m_head; l.m_head = nullptr; return *this; }
@@ -103,14 +148,25 @@ namespace PackageManager
 		Link* operator ()() noexcept;
 	};
 
+	enum package_operations {
+		NULL_P,
+		EXISTS_IN_PM,
+		NOT_IN_PM,
+		CONFLICT,
+		ADDED,
+		REMOVED,
+		NOT_REMOVED,
+		INSTALLED,
+		NOT_FOUND,
+	};
+
 	class MainPackage {
-	private:
-		bool m_installed;
 	protected:
+		bool m_installed;
 		char *m_name;
 		Version m_version;
 		char *m_publisher;
-		Strings m_source;
+		Vector<char*> m_source;
 		List m_dependencies;
 	public:
 		MainPackage()
@@ -126,39 +182,40 @@ namespace PackageManager
 
 		virtual MainPackage& operator =(const MainPackage&);
 		virtual MainPackage& operator =(MainPackage&&) noexcept;
+		bool operator ==(const MainPackage&) noexcept;
+		bool operator !=(const MainPackage&) noexcept;
 
-		virtual bool is_installed() const noexcept { return m_installed; }
+		bool is_installed() const noexcept { return m_installed; }
 		const char *get_name() const noexcept { return m_name; }
-		const Version get_version() const noexcept { return m_version; }
+		Version get_version() const noexcept { return m_version; }
 		const char *get_publisher() const noexcept { return m_publisher; }
-		const Strings& get_source() const noexcept { return m_source; }
-		virtual void install() noexcept;
+		Vector<char*> get_source() const noexcept { return m_source; }
+		List get_dependencies() const noexcept { return m_dependencies; }
+		MainPackage& install() noexcept;
 		MainPackage& add_to_repository(ProPro&);
-		bool remove_from_repository(ProPro&) noexcept;
+		package_operations remove_from_repository(ProPro&) noexcept;
 		MainPackage& update() noexcept;
+		virtual MainPackage *unite_packages(std::istream&, List&);
 	};
 
 	class AuxiliaryPackage: public MainPackage {
 	private:
-		bool m_installed;
-		Strings m_libs;
+		Vector<char*> m_libs;
 	public:
-		AuxiliaryPackage() : m_installed(false) {}
-		AuxiliaryPackage(const Strings &libs)
-			: m_installed(false)
-			, m_libs(libs) {}
+		AuxiliaryPackage(const Vector<char*> &libs) : m_libs(libs) {}
 		AuxiliaryPackage(const AuxiliaryPackage&);
 		AuxiliaryPackage(AuxiliaryPackage&&) noexcept;
 		virtual ~AuxiliaryPackage() = default;
 
 		AuxiliaryPackage& operator =(const AuxiliaryPackage&);
 		AuxiliaryPackage& operator =(AuxiliaryPackage&&) noexcept;
+		bool operator ==(const AuxiliaryPackage&) noexcept;
+		bool operator !=(const AuxiliaryPackage&) noexcept;
 
-		virtual bool is_installed() const noexcept override { return m_installed; }
-		virtual const Strings &get_libs() { return m_libs; }
-		void install() noexcept override;
-		// maybe return List
-		AuxiliaryPackage* separate(unsigned, pair<char*, Strings>*) noexcept; // ???
+		Vector<char*> get_libs() { return m_libs; }
+		void set_libs(const Vector<char*> &libs) { m_libs = libs; }
+		MainPackage *unite_packages(std::istream&, List&) override;
+		List separate(unsigned, const Vector<Vector<char*>>&);
 	};
 
 	class PackageLink: public Link {
@@ -169,29 +226,6 @@ namespace PackageManager
 		MainPackage *get_package() const noexcept { return m_package; }
 		~PackageLink() { delete m_package; }
 	};
-
-	//class PackagePart: public AuxiliaryPackage {
-	//private:
-	//	bool m_installed;
-	//	char *m_name;
-	//	Strings m_libs;
-	//public:
-	//	PackagePart() : m_installed(false), m_name(nullptr) {}
-	//	PackagePart(char *name, const Strings &libs)
-	//		: m_installed(false)
-	//		, m_name(name)
-	//		, m_libs(libs) {}
-	//	~PackagePart() { delete [] m_name; }
-
-	//	PackagePart& operator =(const PackagePart &pp)
-	//		{ AuxiliaryPackage::operator =(pp); return *this;}
-	//	PackagePart& operator =(PackagePart &&pp) noexcept
-	//		{ AuxiliaryPackage::operator =(std::move(pp)); return *this;}
-
-	//	bool is_installed() const noexcept override { return m_installed; }
-	//	const Strings &get_libs() override { return m_libs; }
-	//	PackagePart& set(const pair<char*, Strings>&);
-	//};
 
 	class EmptyPackage {
 	private:
@@ -289,18 +323,15 @@ namespace PackageManager
 		ProPro& operator =(const ProPro &pm) { m_graph = pm.m_graph; return *this; }
 		ProPro& operator =(ProPro &&pm) { m_graph = pm.m_graph; return *this; }
 
-		const Graph& get_graph() const noexcept { return m_graph; }
-		bool remove_package(MainPackage*) noexcept;
-		ProPro& add_package(MainPackage*);
-		ProPro& install_package_auto(const EmptyPackage&);
-		ProPro& install_package_request(std::ostream&, std::istream&, const EmptyPackage&);
-		ProPro& remove_package(const EmptyPackage&);
+		Graph get_graph() const noexcept { return m_graph; }
+		package_operations add_package(MainPackage *p) { return m_graph.add_edge(p); }
+		package_operations remove_package(MainPackage*) noexcept;
+		package_operations remove_package(const EmptyPackage&);
+		package_operations install_package_auto(const EmptyPackage&);
+		package_operations install_package_request(std::ostream&, std::istream&, const EmptyPackage&);
 		ProPro& remove_nonused_auxiliary() noexcept;
-		ProPro& update(std::ostream&) noexcept;
+		std::ostream& update(std::ostream&) noexcept;
 	};
-
-	// MainPackage
-	List unite_packages(std::ostream&, const List&); // ???????
 }
 
 namespace pm = PackageManager;
