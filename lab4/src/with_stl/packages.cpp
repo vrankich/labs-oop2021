@@ -56,6 +56,7 @@
 
 	bool MainPackage::operator ==(const MainPackage &mp) noexcept
 	{
+		if (m_name.empty()) { return false; }
 		if (mp.m_name.empty()) { return false; }
 		if (m_name != mp.m_name) { return false; }
 		return true;
@@ -129,10 +130,9 @@ std::ostream& operator <<(std::ostream &out, const MainPackage &p) noexcept
 		return *this;
 	}
 
-	MainPackage& MainPackage::add_to_repository(ProPro &p)
+	package_operations MainPackage::add_to_repository(ProPro &p)
 	{
-		p.add_package(this);
-		return *this;
+		return p.add_package(this);
 	}
 
 	package_operations MainPackage::remove_from_repository(ProPro &p) noexcept

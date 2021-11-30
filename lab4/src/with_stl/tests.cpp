@@ -97,8 +97,8 @@ void test_repo()
 	EmptyPackage empty2(p);
 
 	ProPro pm(list);
-	pm.install_package_request(std::cout, std::cin, empty1);
-	std::cout << std::endl << *(empty1.get_package());
+//	pm.install_package_request(std::cout, std::cin, empty1);
+//	std::cout << std::endl << *(empty1.get_package());
 	pm.install_package_auto(empty2);
 	std::cout << std::endl << *(empty2.get_package());
 	std::cout << std::endl;
@@ -113,14 +113,67 @@ void test_repo()
 	pm.remove_nonused_auxiliary();
 	pm.update(std::cout);
 
-	int привет = 8;
-	std::cout << привет << std::endl;
+	std::cout << std::endl;
+	std::vector<std::list<MainPackage*>> graph = pm.get_graph().get_graph();
+}
 
+void for_real_tests()
+{
+	ProPro pm;
+	MainPackage *p = nullptr;
+	Version v(0, 2, 1);
+	std::vector<std::string> source;
+	source.push_back("lalala");
+	std::list<MainPackage*> dep;
+
+	p = new MainPackage("orange", v, "market", source, dep);
+	dep.push_back(p);
+	p = new MainPackage("banana", v, "market", source, dep);
+	p->add_to_repository(pm);
+	//ASSERT_EQ(p->add_to_repository(pm), package_operations::ADDED);
+	dep.push_back(p);
+	
+	std::vector<std::list<MainPackage*>> graph = pm.get_graph().get_graph();
+	std::list<MainPackage*>::const_iterator it = graph[0].begin();
+	//ASSERT_EQ((*it)->get_name(), "banana");
+	it++;
+	//ASSERT_EQ((*it)->get_name(), "orange");
+
+	//delete dep.front();
+
+	// what to do with cyclic adding????????
+	p = new MainPackage("flower", v, "market", source, dep);
+	dep.clear();
+	dep.push_back(p);
+	MainPackage *p1 = new MainPackage("potato", v, "market", source, dep);
+	dep.clear();
+	dep.push_back(p1);
+	p->set_dependencies(dep);
+
+	p->add_to_repository(pm);
+	p1->add_to_repository(pm);
+
+	p->add_to_repository(pm);
+	p1->add_to_repository(pm);
+
+	graph = pm.get_graph().get_graph();
+	it = graph[1].begin();
+	//ASSERT_TRUE(**it == *p);
+	it++;
+	//ASSERT_TRUE(**it == *p1);
+	it = graph[2].begin();
+	//ASSERT_TRUE(**it == *p1);
+	it++;
+	//ASSERT_TRUE(**it == *p);
+
+	//ASSERT_TRUE(*(p1->get_dependencies().front()) == *p);
+	//ASSERT_TRUE(*(p->get_dependencies().front()) == *p1);
 }
 
 
 void run_tests()
 {
-	test_installation();
-	test_repo();
+	//test_installation();
+	//test_repo();
+	for_real_tests();
 }

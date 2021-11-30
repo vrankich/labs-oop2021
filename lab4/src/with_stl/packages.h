@@ -35,13 +35,6 @@ public:
 	bool operator !=(const MainPackage&) noexcept;
 	friend std::ostream& operator <<(std::ostream&, const MainPackage&) noexcept;
 
-//	/* add to repository */
-//	MainPackage& operator ++() noexcept;
-//	MainPackage operator ++(int) noexcept;
-//	/* remove from repository */
-//	MainPackage& operator --() noexcept;
-//	MainPackage operator --(int) noexcept;
-	
 	/* getters */
 	bool is_installed() const noexcept { return m_installed; }
 	std::string get_name() const noexcept { return m_name; }
@@ -56,10 +49,10 @@ public:
 	void set_publisher(const std::string &publ) noexcept { m_publisher = publ; }
 	void set_source(const std::vector<std::string> &s) noexcept { m_source = s; }
 	void set_dependencies(const std::list<MainPackage*> &d) noexcept
-		{ delete_dependencies(); m_dependencies = d; }
+		{ m_dependencies = d; }
 
 	MainPackage& install() noexcept;
-	MainPackage& add_to_repository(ProPro&);
+	package_operations add_to_repository(ProPro&);
 	package_operations remove_from_repository(ProPro&) noexcept;
 	MainPackage& update_version() noexcept;
 	virtual MainPackage *unite_packages(std::istream&, std::list<MainPackage*>&);

@@ -21,6 +21,7 @@ Graph::Graph(std::list<MainPackage*> &list)
 {
 	if (list.empty()) { return; }
 	
+	std::list<MainPackage*> list_one_p;
 	std::list<MainPackage*>::const_iterator it;
 	for (it = list.begin(); it != list.end(); it++) {
 		add_package(*it);
@@ -37,63 +38,89 @@ int Graph::index_in_graph(const MainPackage *p) const noexcept
 	return -1;
 }
 
-/* check whether adding a package would form a cycle */
-bool Graph::is_reachable(const MainPackage *p1, const MainPackage *p2) const noexcept
+///* check whether adding a package would form a cycle */
+//bool Graph::is_reachable(const MainPackage *p1, const MainPackage *p2) const noexcept
+//{
+//	if (p1 == p2) { return true; }
+//	
+//	bool *is_visited = new bool[m_graph.size()];
+//	for (size_t i = 0; i < m_graph.size(); i++) {
+//		is_visited[i] = false;
+//	}
+//
+//	int p1_index = index_in_graph(p1);
+//	if (p1_index == -1) { 
+//		delete [] is_visited;
+//		return false; 
+//	}
+//	int p2_index = index_in_graph(p2);
+//	if (p2_index == -1) { 
+//		delete [] is_visited;
+//		return false; 
+//	}
+//	
+//	is_visited[p1_index] = true;
+//	std::list<int> q;
+//	q.push_back(p1_index);
+//	std::list<MainPackage*>::const_iterator it;
+//	while (!q.empty()) {
+//		p1_index = q.front();
+//		q.pop_front();
+//		for(it = m_graph[p1_index].begin(); it != m_graph[p1_index].end(); it++) {
+//			int i = index_in_graph(*it);
+//			if (i == p2_index) { 
+//				delete [] is_visited;
+//				return true; 
+//			}
+//			if (!is_visited[i]) {
+//				is_visited[i] = true;
+//				q.push_back(i);
+//			}
+//		}
+//	}
+//	delete [] is_visited;
+//
+//	return false;
+//}
+
+bool Graph::is_reachable(size_t i_from, const MainPackage *to) const noexcept
 {
-	if (p1 == p2) { return true; }
-	
-	bool *is_visited = new bool[m_graph.size()];
-	for (size_t i = 0; i < m_graph.size(); i++) {
-		is_visited[i] = false;
-	}
-
-	int p1_index = index_in_graph(p1);
-	if (p1_index == -1) { 
-		delete [] is_visited;
-		return false; 
-	}
-	int p2_index = index_in_graph(p2);
-	if (p2_index == -1) { 
-		delete [] is_visited;
-		return false; 
-	}
-	
-	is_visited[p1_index] = true;
-	std::list<int> q;
-	q.push_back(p1_index);
 	std::list<MainPackage*>::const_iterator it;
-	while (!q.empty()) {
-		p1_index = q.front();
-		q.pop_front();
-		for(it = m_graph[p1_index].begin(); it != m_graph[p1_index].end(); it++) {
-			int i = index_in_graph(*it);
-			if (i == p2_index) { 
-				delete [] is_visited;
-				return true; 
+	//for (size_t i = 0; i < m_graph.size(); i++) {
+		for (it = m_graph[i_from].begin(); it != m_graph[i_from].end(); it++) {
+			if (**it == *to) {
+				//return package_operations::CONFLICT;
+				return true;
 			}
-			if (!is_visited[i]) {
-				is_visited[i] = true;
-				q.push_back(i);
-			}
-		}
-	}
-	delete [] is_visited;
-
-	return false;
+		} 
+		return false;
+	//}
 }
 
 package_operations Graph::add_package(MainPackage *p)
 {
 	if (!p) { return package_operations::NULL_P; }
 	if (is_package_in_graph(p)) { return package_operations::EXISTS_IN_PM; } // maybe throw an exception
-	
+
 	std::list<MainPackage*>::const_iterator it;
-	std::list<MainPackage*> dependencies = p->get_dependencies();
+
 	/* graph should be without cycles */
-	for (it = dependencies.begin(); it != dependencies.end(); it++) {
-		/* check whether adding a package would form a cycle */
-		if(is_reachable(p, *it)) { return package_operations::CONFLICT; }
+	for (size_t i = 0; i < m_graph.size(); i++) {
+		for (it = m_graph[i].begin(); it != m_graph[i].end(); it++) {
+			if (**it == *p) {
+				return package_operations::CONFLICT;
+			}
+		} 
 	}
+
+	std::list<MainPackage*> dependencies = p->get_dependencies();
+
+//	std::list<MainPackage*> new_dep;
+//	for (it = dependencies.begin(); it != dependencies.end(); it++) {
+//		/* check whether adding a package forms a cycle */
+//		new_dep.push_back(*it);	
+//	}
+
 	/* add new vertex with edges to graph */
 	dependencies.push_front(p);
 	m_graph.push_back(dependencies);
